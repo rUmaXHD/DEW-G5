@@ -14,7 +14,7 @@ public class LogServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         // Ruta relativa desde webapp
-        String relativePath = "/WEB-INF/logs/nol_logs.txt";
+        String relativePath = "/nol2425/src/main/webapp/WEB-INF/logs/nol_logs.txt";
         
         // Convertir a ruta absoluta
         logFilePath = getServletContext().getRealPath(relativePath);
