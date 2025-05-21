@@ -11,68 +11,65 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
     
-    private static final long serialVersionUID = 1L;
-	private static final String CENTRO_EDUCATIVO_URL = "http://localhost:9090";
+    private static final String API_URL = "http://localhost:9090/CentroEducativo/login";
 
-    
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        // 1. Obtener credenciales del formulario
+        // 1. Obtener credenciales
         String dni = request.getParameter("dni");
         String password = request.getParameter("password");
         
-        // 2. Preparar JSON para la autenticación
-        String jsonInput = String.format("{\"dni\":\"%s\",\"password\":\"%s\"}", dni, password);
-        
+        // 2. Autenticar en CentroEducativo
         try {
-            // 3. Crear conexión HTTP con CentroEducativo
-            @SuppressWarnings("deprecation")
-			URL url = new URL(CENTRO_EDUCATIVO_URL);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            String key = authenticateWithCentroEducativo(dni, password);
+            
+            // 3. Guardar en sesión
+            HttpSession session = request.getSession();
+            session.setAttribute("key", key);
+            session.setAttribute("dni", dni);
+            
+            // 4. Redirigir según rol (Tomcat)
+            if (request.isUserInRole("rolalu")) {
+                response.sendRedirect("alumno/inicio.jsp");
+            } else if (request.isUserInRole("rolpro")) {
+                response.sendRedirect("profesor/inicio.jsp");
+            } else {
+                response.sendRedirect("login.jsp?error=Rol no asignado");
+            }
+            
+        } catch (AuthException e) {
+            response.sendRedirect("login.jsp?error=" + URLEncoder.encode(e.getMessage(), "UTF-8"));
+        }
+    }
+    
+    private String authenticateWithCentroEducativo(String dni, String password) throws AuthException {
+        try {
+            // Configurar conexión
+            HttpURLConnection conn = (HttpURLConnection) new URL(API_URL).openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoOutput(true);
             
-            // 4. Enviar credenciales
-            try(OutputStream os = conn.getOutputStream()) {
-                byte[] input = jsonInput.getBytes("utf-8");
-                os.write(input, 0, input.length);
-            }
+            // Enviar credenciales
+            String json = String.format("{\"dni\":\"%s\",\"password\":\"%s\"}", dni, password);
+            conn.getOutputStream().write(json.getBytes());
             
-            // 5. Procesar respuesta
-            if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                // Leer la clave de sesión (key)
-                String key;
-                try(InputStream inputStream = conn.getInputStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-                    key = reader.readLine();
-                }
-                
-                // 6. Almacenar key en la sesión
-                HttpSession session = request.getSession();
-                session.setAttribute("key", key);
-                session.setAttribute("dni", dni);
-                session.setAttribute("password", password);
-                
-                // 7. Redirigir según rol (simplificado)
-                if (request.isUserInRole("rolalu")) {
-                    response.sendRedirect("alumno/inicio.jsp");
-                } else if (request.isUserInRole("rolpro")) {
-                    response.sendRedirect("profesor/inicio.jsp");
-                } else {
-                    response.sendRedirect("error.jsp?msg=Rol no válido");
-                }
-                
+            // Procesar respuesta
+            if (conn.getResponseCode() == 200) {
+                return new BufferedReader(new InputStreamReader(conn.getInputStream())).readLine();
             } else {
-                // Error en la autenticación
-                response.sendRedirect("login.jsp?error=Credenciales incorrectas");
+                String error = new BufferedReader(new InputStreamReader(conn.getErrorStream())).readLine();
+                throw new AuthException(error != null ? error : "Credenciales incorrectas");
             }
-            
-        } catch (Exception e) {
-            // Error de conexión con CentroEducativo
-            response.sendRedirect("login.jsp?error=Error al conectar con el servidor");
+        } catch (IOException e) {
+            throw new AuthException("Error conectando con CentroEducativo");
+        }
+    }
+    
+    private static class AuthException extends Exception {
+        public AuthException(String message) {
+            super(message);
         }
     }
 }
-
