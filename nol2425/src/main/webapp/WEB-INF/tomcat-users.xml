@@ -1,4 +1,0 @@
-<role rolename="rolalu"/>
-<role rolename="rolpro"/>
-<user username="alumno1" password="alumno1" roles="rolalu"/>
-<user username="prof1" password="prof1" roles="rolpro"/>
