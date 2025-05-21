@@ -1,85 +1,78 @@
 package dew.main;
-
+import java.io.*;
+import java.net.*;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import jakarta.servlet.http.HttpSession;
 
-/**
- * Servlet implementation class LoginServlet
- */
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-       
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public LoginServlet() {
-        super();
-        // TODO Auto-generated constructor stub
+    
+    private static final long serialVersionUID = 1L;
+	private static final String CENTRO_EDUCATIVO_URL = "http://localhost:9090";
+
+    
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        // 1. Obtener credenciales del formulario
+        String dni = request.getParameter("dni");
+        String password = request.getParameter("password");
+        
+        // 2. Preparar JSON para la autenticación
+        String jsonInput = String.format("{\"dni\":\"%s\",\"password\":\"%s\"}", dni, password);
+        
+        try {
+            // 3. Crear conexión HTTP con CentroEducativo
+            @SuppressWarnings("deprecation")
+			URL url = new URL(CENTRO_EDUCATIVO_URL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoOutput(true);
+            
+            // 4. Enviar credenciales
+            try(OutputStream os = conn.getOutputStream()) {
+                byte[] input = jsonInput.getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
+            
+            // 5. Procesar respuesta
+            if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                // Leer la clave de sesión (key)
+                String key;
+                try(InputStream inputStream = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                    key = reader.readLine();
+                }
+                
+                // 6. Almacenar key en la sesión
+                HttpSession session = request.getSession();
+                session.setAttribute("key", key);
+                session.setAttribute("dni", dni);
+                session.setAttribute("password", password);
+                
+                // 7. Redirigir según rol (simplificado)
+                if (request.isUserInRole("rolalu")) {
+                    response.sendRedirect("alumno/inicio.jsp");
+                } else if (request.isUserInRole("rolpro")) {
+                    response.sendRedirect("profesor/inicio.jsp");
+                } else {
+                    response.sendRedirect("error.jsp?msg=Rol no válido");
+                }
+                
+            } else {
+                // Error en la autenticación
+                response.sendRedirect("login.jsp?error=Credenciales incorrectas");
+            }
+            
+        } catch (Exception e) {
+            // Error de conexión con CentroEducativo
+            response.sendRedirect("login.jsp?error=Error al conectar con el servidor");
+        }
     }
-
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		response.getWriter().append("Served at: ").append(request.getContextPath());
-	}
-
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String dni = request.getParameter("dni");
-	    String password = request.getParameter("password");
-
-	    // Dirección del servicio externo CentroEducativo (ajusta si es necesario)
-	    String urlLogin = "http://localhost:9090/login";
-	 // Preparar conexión HTTP (POST)
-	    URL url = new URL(urlLogin);
-	    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-	    conn.setRequestMethod("POST");
-	    conn.setDoOutput(true);
-	    conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-
-	    // Enviar parámetros dni y password
-	    String params = "dni=" + URLEncoder.encode(dni, "UTF-8")
-	                  + "&password=" + URLEncoder.encode(password, "UTF-8");
-
-	    OutputStream os = conn.getOutputStream();
-	    os.write(params.getBytes());
-	    os.flush();
-	    os.close();
-
-	    int status = conn.getResponseCode();
-
-	    if (status == 200) {
-	        // Leer respuesta: se espera que contenga la clave de sesión ("key")
-	        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-	        String key = reader.readLine();  // Suponemos que solo devuelve la key en texto plano
-	        reader.close();
-
-	        // Guardar la key en sesión
-	        HttpSession session = request.getSession();
-	        session.setAttribute("key", key);
-	        session.setAttribute("dni", dni);  // Puedes guardar también el usuario si quieres
-
-	        // Redirigir al área segura
-	        response.sendRedirect("menu.jsp");  // o cualquier página protegida
-	    } else {
-	        // Error de autenticación
-	        request.setAttribute("error", "DNI o contraseña incorrectos.");
-	        RequestDispatcher dispatcher = request.getRequestDispatcher("login.jsp");
-	        dispatcher.forward(request, response);
-	    }
-
-	    conn.disconnect();
-	}
-
-	}
-
 }
+
