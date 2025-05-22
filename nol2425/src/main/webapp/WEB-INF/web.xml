@@ -16,12 +16,29 @@
   </welcome-file-list>
   <security-constraint>
     <web-resource-collection>
-        <web-resource-name>Recursos Protegidos</web-resource-name>
-        <url-pattern>/alumno/*</url-pattern> <!-- Correcto dentro de web-resource-collection -->
+        <web-resource-name>Recursos Alumnos</web-resource-name>
+        <url-pattern>/alumno/*</url-pattern>
     </web-resource-collection>
     <auth-constraint>
         <role-name>rolalu</role-name>
     </auth-constraint>
-  </security-constraint>
+	</security-constraint>
+	
+   <security-constraint>
+	    <web-resource-collection>
+	        <web-resource-name>Recursos Profesores</web-resource-name>
+	        <url-pattern>/profesor/*</url-pattern>
+	    </web-resource-collection>
+	    <auth-constraint>
+	        <role-name>rolpro</role-name>
+	    </auth-constraint>
+	</security-constraint>
+	<login-config>
+    <auth-method>FORM</auth-method>  <!-- Usar BASIC si prefieres diálogo del navegador -->
+    <form-login-config>
+        <form-login-page>/login.jsp</form-login-page>
+        <form-error-page>/login.jsp?error=1</form-error-page>
+    </form-login-config>
+</login-config>
   
 </web-app>
