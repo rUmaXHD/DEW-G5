@@ -1,6 +1,8 @@
 package dew.main;
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,54 +18,69 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        // 1. Obtener credenciales
         String dni = request.getParameter("dni");
         String password = request.getParameter("password");
-        
-        // 2. Autenticar en CentroEducativo
+
         try {
+            // 1. Autenticar en CentroEducativo
             String key = authenticateWithCentroEducativo(dni, password);
             
-            // 3. Guardar en sesión
-            HttpSession session = request.getSession();
-            session.setAttribute("key", key);
-            session.setAttribute("dni", dni);
-            
-            // 4. Redirigir según rol (Tomcat)
-            if (request.isUserInRole("rolalu")) {
-                response.sendRedirect("alumno/inicio.jsp");
-            } else if (request.isUserInRole("rolpro")) {
-                response.sendRedirect("profesor/inicio.jsp");
+            if (key != null && !key.trim().isEmpty()) {
+                // 2. Guardar en sesión
+                HttpSession session = request.getSession();
+                session.setAttribute("key", key);
+                session.setAttribute("dni", dni);
+                
+                // 3. Redirigir según rol
+                if (request.isUserInRole("rolalu")) {
+                    response.sendRedirect("alumno/inicio.jsp");
+                } else if (request.isUserInRole("rolpro")) {
+                    response.sendRedirect("profesor/inicio.jsp");
+                }
             } else {
-                response.sendRedirect("login.jsp?error=Rol no asignado");
+                response.sendRedirect("login.jsp?error=Credenciales incorrectas");
             }
-            
-        } catch (AuthException e) {
-            response.sendRedirect("login.jsp?error=" + URLEncoder.encode(e.getMessage(), "UTF-8"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect("login.jsp?error=Error en el servidor");
         }
     }
-    
-    private String authenticateWithCentroEducativo(String dni, String password) throws AuthException {
+
+    private String authenticateWithCentroEducativo(String dni, String password) {
+        HttpURLConnection conn = null;
         try {
             // Configurar conexión
-            HttpURLConnection conn = (HttpURLConnection) new URL(API_URL).openConnection();
+            URL url = new URL("http://localhost:9090/CentroEducativo/login");
+            conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoOutput(true);
             
             // Enviar credenciales
-            String json = String.format("{\"dni\":\"%s\",\"password\":\"%s\"}", dni, password);
-            conn.getOutputStream().write(json.getBytes());
+            String jsonInput = String.format("{\"dni\":\"%s\",\"password\":\"%s\"}", dni, password);
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(jsonInput.getBytes(StandardCharsets.UTF_8));
+            }
             
             // Procesar respuesta
-            if (conn.getResponseCode() == 200) {
-                return new BufferedReader(new InputStreamReader(conn.getInputStream())).readLine();
+            if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                try (BufferedReader reader = new BufferedReader(
+                     new InputStreamReader(conn.getInputStream()))) {
+                    return reader.readLine();
+                }
             } else {
-                String error = new BufferedReader(new InputStreamReader(conn.getErrorStream())).readLine();
-                throw new AuthException(error != null ? error : "Credenciales incorrectas");
+                // Leer mensaje de error si la API lo devuelve
+                try (BufferedReader reader = new BufferedReader(
+                     new InputStreamReader(conn.getErrorStream()))) {
+                    System.err.println("Error de API: " + reader.readLine());
+                }
+                return null;
             }
-        } catch (IOException e) {
-            throw new AuthException("Error conectando con CentroEducativo");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (conn != null) conn.disconnect();
         }
     }
     
