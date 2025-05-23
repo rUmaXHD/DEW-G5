@@ -4,20 +4,18 @@
 
 ### Objetivo
 
-Simular la entrega, revisar el cumplimiento total de requisitos y asegurar calidad.
+Acabar la entrega, revisar el cumplimiento total de requisitos.
 
 ### Temas tratados
 
 * Validación de:
 
-  * Filtro Logs v2 operativo.
-  * Navegación del alumnado.
+  * Filtro Logs v2.
   * Autenticación BASIC y sesiones compatibles.
   * Peticiones correctas a CentroEducativo.
-  * Shell script funcional.
-* Importación correcta del ZIP en Eclipse.
+  * Shell script.
 * Repaso de documentación y actas generadas.
 
 ### Resultado
 
-Entrega del Hito 1 completada. Revisión cruzada aprobada por todos los miembros del equipo.
+Entrega del Hito 1 completada sin éxito, no conseguimos acabar el punto 8, la Gestión de Identidades y el punto 9, la Vista de Usuario.
