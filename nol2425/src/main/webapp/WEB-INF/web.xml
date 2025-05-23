@@ -1,27 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="https://jakarta.ee/xml/ns/jakartaee" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd" id="WebApp_ID" version="6.0">
-  <display-name>nol2425</display-name>
-  <context-param>
-    <param-name>logsDirectory</param-name>
-    <param-value>/WEB-INF/logs</param-value>
-  </context-param>
-  <welcome-file-list>
-  	<welcome-file>login.jsp</welcome-file>
-    <welcome-file>index.html</welcome-file>
-    <welcome-file>index.jsp</welcome-file>
-    <welcome-file>index.htm</welcome-file>
-    <welcome-file>default.html</welcome-file>
-    <welcome-file>default.jsp</welcome-file>
-    <welcome-file>default.htm</welcome-file>
-  </welcome-file-list>
-  <security-constraint>
-    <web-resource-collection>
-        <web-resource-name>Recursos Protegidos</web-resource-name>
-        <url-pattern>/alumno/*</url-pattern> <!-- Correcto dentro de web-resource-collection -->
-    </web-resource-collection>
-    <auth-constraint>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
+         version="5.0">
+
+    <!-- Configuración de seguridad -->
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Área de Alumnos</web-resource-name>
+            <url-pattern>/alumno/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>rolalu</role-name>
+        </auth-constraint>
+    </security-constraint>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Área de Profesores</web-resource-name>
+            <url-pattern>/profesor/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>rolpro</role-name>
+        </auth-constraint>
+    </security-constraint>
+
+    <!-- Configuración de login -->
+    <login-config>
+        <auth-method>FORM</auth-method>
+        <form-login-config>
+            <form-login-page>/login.jsp</form-login-page>
+            <form-error-page>/login.jsp?error=1</form-error-page>
+        </form-login-config>
+    </login-config>
+
+    <!-- Definición de roles -->
+    <security-role>
         <role-name>rolalu</role-name>
-    </auth-constraint>
-  </security-constraint>
-  
+    </security-role>
+    <security-role>
+        <role-name>rolpro</role-name>
+    </security-role>
+
+    <!-- Configuración del archivo de logs -->
+    <context-param>
+        <param-name>log-file-path</param-name>
+        <param-value>/WEB-INF/logs/nol_logs.txt</param-value>
+    </context-param>
+
+    <!-- Servlet de redirección -->
+    <servlet>
+        <servlet-name>RedirectServlet</servlet-name>
+        <servlet-class>servlet.RedirectServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RedirectServlet</servlet-name>
+        <url-pattern>/redirect</url-pattern>
+    </servlet-mapping>
+
+    <!-- Página de inicio por defecto -->
+    <welcome-file-list>
+        <welcome-file>redirect</welcome-file>
+    </welcome-file-list>
+
 </web-app>
