@@ -45,7 +45,7 @@ public class LoginServlet extends HttpServlet {
             } //else {
                 //response.sendRedirect("login.jsp?error=Rol no reconocido");
             //}
-
+            System.out.println(request.UserRole)
         } catch (Exception e) {
             response.sendRedirect("login.jsp?error=Error en el servidor");
         }

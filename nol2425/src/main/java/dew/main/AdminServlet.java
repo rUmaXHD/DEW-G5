@@ -20,6 +20,7 @@ public class AdminServlet extends HttpServlet {
         HttpSession session = request.getSession();
         String key = (String) session.getAttribute("key");
         
+        
         if (key == null) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "No autenticado");
             return;

@@ -14,7 +14,7 @@
                 apellidos: form.apellidos.value,
                 password: form.password.value
             };
-
+			
             try {
                 const response = await fetch('AdminServlet?action=addAlumno', {
                     method: 'POST',
@@ -33,6 +33,7 @@
                 alert("Error: " + error.message);
             }
         }
+        
     </script>
 </head>
 <body class="container mt-4">
