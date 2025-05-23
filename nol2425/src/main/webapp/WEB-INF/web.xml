@@ -7,7 +7,7 @@
     <!-- Parámetro para la ruta del archivo de log -->
     <context-param>
         <param-name>log-file</param-name>
-        <param-value>${catalina.base}/logs/notas-online.log</param-value>
+        <param-value>${user.home}/Desktop/notas-online.log</param-value>
     </context-param>
 
     <!-- Configuración de seguridad -->
