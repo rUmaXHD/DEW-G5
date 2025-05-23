@@ -6,7 +6,7 @@
     <param-value>/WEB-INF/logs</param-value>
   </context-param>
   <welcome-file-list>
-  	<welcome-file>login.jsp</welcome-file>
+  <welcome-file>login.jsp</welcome-file>
     <welcome-file>index.html</welcome-file>
     <welcome-file>index.jsp</welcome-file>
     <welcome-file>index.htm</welcome-file>
@@ -22,29 +22,29 @@
     <auth-constraint>
         <role-name>rolalu</role-name>
     </auth-constraint>
-	</security-constraint>
-	<security-constraint>
-	    <web-resource-collection>
-	        <web-resource-name>Admin Resources</web-resource-name>
-	        <url-pattern>/AdminServlet</url-pattern>
-	        <url-pattern>/admin/*</url-pattern>
-	    </web-resource-collection>
-	    <auth-constraint>
-	        <role-name>roladmin</role-name>
-	    </auth-constraint>
-	</security-constraint>
-	
+</security-constraint>
+<security-constraint>
+    <web-resource-collection>
+        <web-resource-name>Admin Resources</web-resource-name>
+        <url-pattern>/AdminServlet</url-pattern>
+        <url-pattern>/admin/*</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+        <role-name>roladmin</role-name>
+    </auth-constraint>
+</security-constraint>
+
    <security-constraint>
-	    <web-resource-collection>
-	        <web-resource-name>Recursos Profesores</web-resource-name>
-	        <url-pattern>/profesor/*</url-pattern>
-	    </web-resource-collection>
-	    <auth-constraint>
-	        <role-name>rolpro</role-name>
-	    </auth-constraint>
-	</security-constraint>
-	<login-config>
-    <auth-method>FORM</auth-method>  <!-- Usar BASIC si prefieres diálogo del navegador -->
+    <web-resource-collection>
+        <web-resource-name>Recursos Profesores</web-resource-name>
+        <url-pattern>/profesor/*</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+        <role-name>rolpro</role-name>
+    </auth-constraint>
+</security-constraint>
+<login-config>
+    <auth-method>FORM</auth-method>  <!-- Usar BASIC si prefieres diÃ¡logo del navegador -->
     <form-login-config>
         <form-login-page>/login.jsp</form-login-page>
         <form-error-page>/login.jsp?error=1</form-error-page>
