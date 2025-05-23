@@ -6,71 +6,59 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.io.*;
+import java.net.*;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-
-@WebServlet("/auth")
+@WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
-    private static final String CENTRO_EDUCATIVO_URL = "http://localhost:9090";
-    private final HttpClient httpClient = HttpClient.newHttpClient();
     
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        // Este método se llamará después de que Tomcat haya autenticado al usuario
-        String dni = request.getRemoteUser(); // Obtener el DNI del usuario autenticado
-        HttpSession session = request.getSession();
-        
-        // Verificar si ya existe una sesión con key válida
-        if (session.getAttribute("key") != null) {
-            redirectToUserPage(request, response);
-            return;
-        }
+        String dni = request.getParameter("dni");
+        String password = request.getParameter("password");
         
         try {
-            // Obtener la contraseña del usuario de Tomcat (esto debería configurarse en tomcat-users.xml)
-            String password = "123456"; // La contraseña por defecto que configuramos
-            
-            // Crear el cuerpo JSON para la petición
-            String jsonBody = String.format("{\"dni\": \"%s\", \"password\": \"%s\"}", dni, password);
-            
-            // Crear y enviar la petición HTTP POST
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(CENTRO_EDUCATIVO_URL + "/CentroEducativo/login"))
-                    .header("Content-Type", "application/json")
-                    .header("accept", "text/plain")
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                    .build();
-            
-            HttpResponse<String> httpResponse = httpClient.send(httpRequest, 
-                    HttpResponse.BodyHandlers.ofString());
-            
-            if (httpResponse.statusCode() == 200) {
-                // Guardar información en la sesión
-                String key = httpResponse.body();
-                session.setAttribute("key", key);
-                session.setAttribute("dni", dni);
-                
-                redirectToUserPage(request, response);
+            // 1. Autenticar con CentroEducativo
+            URL url = new URL("http://localhost:9090/CentroEducativo/login");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Accept", "text/plain");
+            conn.setDoOutput(true);
+
+            // Enviar credenciales
+            String jsonInput = "{\"dni\":\"" + dni + "\",\"password\":\"" + password + "\"}";
+            try(OutputStream os = conn.getOutputStream()) {
+                byte[] input = jsonInput.getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
+
+            // Obtener respuesta
+            int responseCode = conn.getResponseCode();
+            if (responseCode == 200) {
+                // Leer la key de la respuesta
+                try(BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+                    String key = br.readLine();
+                    
+                    // Guardar en sesión
+                    HttpSession session = request.getSession();
+                    session.setAttribute("key", key);
+                    session.setAttribute("dni", dni);
+                    
+                    // Determinar el rol y redirigir
+                    if (dni.equals("23456733H") || dni.equals("10293756L") || 
+                        dni.equals("06374291A") || dni.equals("65748923M")) {
+                        response.sendRedirect("profesor/index.jsp");
+                    } else {
+                        response.sendRedirect("alumno/index.jsp");
+                    }
+                }
             } else {
-                response.sendRedirect("login.jsp?error=Error de autenticación con CentroEducativo: " + 
-                    httpResponse.statusCode());
+                response.sendRedirect("login.jsp?error=Error de autenticación");
             }
         } catch (Exception e) {
-            response.sendRedirect("login.jsp?error=Error de conexión: " + e.getMessage());
-        }
-    }
-    
-    private void redirectToUserPage(HttpServletRequest request, HttpServletResponse response) 
-            throws IOException {
-        if (request.isUserInRole("rolpro")) {
-            response.sendRedirect("profesor/index.jsp");
-        } else {
-            response.sendRedirect("alumno/index.jsp");
+            response.sendRedirect("login.jsp?error=" + e.getMessage());
         }
     }
 } 
