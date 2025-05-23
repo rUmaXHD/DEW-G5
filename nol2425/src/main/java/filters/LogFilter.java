@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.nio.file.*;
 
 @WebFilter("/*")
 public class LogFilter implements Filter {
@@ -17,6 +18,22 @@ public class LogFilter implements Filter {
         logFilePath = filterConfig.getServletContext().getInitParameter("log-file");
         if (logFilePath == null) {
             throw new ServletException("No se ha especificado la ruta del archivo de log en web.xml");
+        }
+        
+        // Reemplazar variables de sistema si existen
+        logFilePath = logFilePath.replace("${catalina.base}", System.getProperty("catalina.base"));
+        
+        try {
+            // Crear el directorio si no existe
+            Path logPath = Paths.get(logFilePath);
+            Files.createDirectories(logPath.getParent());
+            
+            // Crear el archivo si no existe
+            if (!Files.exists(logPath)) {
+                Files.createFile(logPath);
+            }
+        } catch (IOException e) {
+            throw new ServletException("No se pudo crear el directorio o archivo de log", e);
         }
     }
     
@@ -37,9 +54,12 @@ public class LogFilter implements Filter {
         );
         
         // Escribir en el archivo de log
-        try (FileWriter fw = new FileWriter(logFilePath, true);
-             BufferedWriter bw = new BufferedWriter(fw)) {
-            bw.write(logEntry);
+        try {
+            Files.write(Paths.get(logFilePath), logEntry.getBytes(), 
+                StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+        } catch (IOException e) {
+            // Log el error pero permite que la petición continúe
+            System.err.println("Error escribiendo en el log: " + e.getMessage());
         }
         
         chain.doFilter(request, response);
