@@ -14,9 +14,9 @@
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>Área Protegida</web-resource-name>
-            <url-pattern>/main.jsp</url-pattern>
             <url-pattern>/profesor/*</url-pattern>
             <url-pattern>/alumno/*</url-pattern>
+            <url-pattern>/auth</url-pattern>
         </web-resource-collection>
         <auth-constraint>
             <role-name>rolalu</role-name>
@@ -40,5 +40,15 @@
     <security-role>
         <role-name>rolpro</role-name>
     </security-role>
+
+    <!-- Página de inicio después de la autenticación -->
+    <welcome-file-list>
+        <welcome-file>login.jsp</welcome-file>
+    </welcome-file-list>
+
+    <!-- Configuración de sesión -->
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
 
 </web-app>

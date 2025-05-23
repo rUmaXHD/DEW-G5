@@ -13,25 +13,28 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-@WebServlet("/LoginServlet")
+@WebServlet("/auth")
 public class LoginServlet extends HttpServlet {
     private static final String CENTRO_EDUCATIVO_URL = "http://localhost:9090";
     private final HttpClient httpClient = HttpClient.newHttpClient();
     
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        String dni = request.getParameter("dni");
-        String password = request.getParameter("password");
+        // Este método se llamará después de que Tomcat haya autenticado al usuario
+        String dni = request.getRemoteUser(); // Obtener el DNI del usuario autenticado
         HttpSession session = request.getSession();
         
         // Verificar si ya existe una sesión con key válida
         if (session.getAttribute("key") != null) {
-            response.sendRedirect("main.jsp");
+            redirectToUserPage(request, response);
             return;
         }
         
         try {
+            // Obtener la contraseña del usuario de Tomcat (esto debería configurarse en tomcat-users.xml)
+            String password = "123456"; // La contraseña por defecto que configuramos
+            
             // Crear el cuerpo JSON para la petición
             String jsonBody = String.format("{\"dni\": \"%s\", \"password\": \"%s\"}", dni, password);
             
@@ -52,18 +55,22 @@ public class LoginServlet extends HttpServlet {
                 session.setAttribute("key", key);
                 session.setAttribute("dni", dni);
                 
-                // Redirigir según el rol
-                if (request.isUserInRole("rolpro")) {
-                    response.sendRedirect("profesor/index.jsp");
-                } else {
-                    response.sendRedirect("alumno/index.jsp");
-                }
+                redirectToUserPage(request, response);
             } else {
                 response.sendRedirect("login.jsp?error=Error de autenticación con CentroEducativo: " + 
                     httpResponse.statusCode());
             }
         } catch (Exception e) {
             response.sendRedirect("login.jsp?error=Error de conexión: " + e.getMessage());
+        }
+    }
+    
+    private void redirectToUserPage(HttpServletRequest request, HttpServletResponse response) 
+            throws IOException {
+        if (request.isUserInRole("rolpro")) {
+            response.sendRedirect("profesor/index.jsp");
+        } else {
+            response.sendRedirect("alumno/index.jsp");
         }
     }
 } 

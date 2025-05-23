@@ -17,14 +17,14 @@
                 </div>
             <% } %>
             
-            <form action="LoginServlet" method="post">
+            <form action="j_security_check" method="post">
                 <div class="mb-3">
-                    <label for="dni" class="form-label">DNI</label>
-                    <input type="text" class="form-control" id="dni" name="dni" required>
+                    <label for="j_username" class="form-label">DNI</label>
+                    <input type="text" class="form-control" id="j_username" name="j_username" required>
                 </div>
                 <div class="mb-3">
-                    <label for="password" class="form-label">Contraseña</label>
-                    <input type="password" class="form-control" id="password" name="password" required>
+                    <label for="j_password" class="form-label">Contraseña</label>
+                    <input type="password" class="form-control" id="j_password" name="j_password" required>
                 </div>
                 <button type="submit" class="btn btn-primary w-100">Ingresar</button>
             </form>
