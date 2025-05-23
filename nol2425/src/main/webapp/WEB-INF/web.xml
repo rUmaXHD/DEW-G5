@@ -23,6 +23,16 @@
         <role-name>rolalu</role-name>
     </auth-constraint>
 	</security-constraint>
+	<security-constraint>
+	    <web-resource-collection>
+	        <web-resource-name>Admin Resources</web-resource-name>
+	        <url-pattern>/AdminServlet</url-pattern>
+	        <url-pattern>/admin/*</url-pattern>
+	    </web-resource-collection>
+	    <auth-constraint>
+	        <role-name>roladmin</role-name>
+	    </auth-constraint>
+	</security-constraint>
 	
    <security-constraint>
 	    <web-resource-collection>

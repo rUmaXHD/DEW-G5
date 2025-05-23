@@ -25,23 +25,28 @@ public class LoginServlet extends HttpServlet {
             // 1. Autenticar en CentroEducativo
             String key = authenticateWithCentroEducativo(dni, password);
             
-            if (key != null && !key.trim().isEmpty()) {
-                // 2. Guardar en sesión
-                HttpSession session = request.getSession();
-                session.setAttribute("key", key);
-                session.setAttribute("dni", dni);
-                
-                // 3. Redirigir según rol
-                if (request.isUserInRole("rolalu")) {
-                    response.sendRedirect("alumno/inicio.jsp");
-                } else if (request.isUserInRole("rolpro")) {
-                    response.sendRedirect("profesor/inicio.jsp");
-                }
-            } else {
+            if (key == null) {
                 response.sendRedirect("login.jsp?error=Credenciales incorrectas");
+                return;
             }
+
+            // 2. Guardar en sesión
+            HttpSession session = request.getSession();
+            session.setAttribute("key", key);
+            session.setAttribute("dni", dni);
+            
+            // 3. Redirigir según rol
+            if (dni.equals("111111111")) {  // Usuario admin
+                response.sendRedirect("admin/inicio.jsp");
+            } else if (request.isUserInRole("rolalu")) {
+                response.sendRedirect("alumno/inicio.jsp");
+            } else if (request.isUserInRole("rolpro")) {
+                response.sendRedirect("profesor/inicio.jsp");
+            } else {
+                response.sendRedirect("login.jsp?error=Rol no reconocido");
+            }
+
         } catch (Exception e) {
-            e.printStackTrace();
             response.sendRedirect("login.jsp?error=Error en el servidor");
         }
     }
