@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tomcat-users xmlns="http://tomcat.apache.org/xml"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://tomcat.apache.org/xml tomcat-users.xsd"
+              version="1.0">
+
+    <!-- Roles -->
+    <role rolename="rolalu"/>
+    <role rolename="rolpro"/>
+
+    <!-- Alumnos -->
+    <user username="12345678W" password="123456" roles="rolalu"/>
+    <user username="23456387R" password="123456" roles="rolalu"/>
+    <user username="34567891F" password="123456" roles="rolalu"/>
+    <user username="93847525G" password="123456" roles="rolalu"/>
+    <user username="37264096W" password="123456" roles="rolalu"/>
+
+    <!-- Profesores -->
+    <user username="23456733H" password="123456" roles="rolpro"/>
+    <user username="10293756L" password="123456" roles="rolpro"/>
+    <user username="06374291A" password="123456" roles="rolpro"/>
+    <user username="65748923M" password="123456" roles="rolpro"/>
+
+</tomcat-users> 
