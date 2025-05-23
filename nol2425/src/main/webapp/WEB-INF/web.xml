@@ -34,6 +34,16 @@
 	    </auth-constraint>
 	</security-constraint>
 	
+	
+	
+	
+	
+	
+	<security-role>
+		<role-name>rolalu</role-name>
+	</security-role>
+	
+	
    <security-constraint>
 	    <web-resource-collection>
 	        <web-resource-name>Recursos Profesores</web-resource-name>
