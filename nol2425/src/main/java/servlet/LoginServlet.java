@@ -12,23 +12,11 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.HashMap;
-import java.util.Map;
 
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
     private static final String CENTRO_EDUCATIVO_URL = "http://localhost:9090";
     private final HttpClient httpClient = HttpClient.newHttpClient();
-    
-    // Mapa para almacenar las credenciales de CentroEducativo
-    private static final Map<String, UserCredentials> userCredentials = new HashMap<>();
-    
-    static {
-        // Credenciales de ejemplo (en producción deberían estar en una base de datos)
-        userCredentials.put("12345678W", new UserCredentials("12345678W", "123456"));
-        userCredentials.put("23456387R", new UserCredentials("23456387R", "123456"));
-        // ... añadir más usuarios según sea necesario
-    }
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
@@ -43,21 +31,15 @@ public class LoginServlet extends HttpServlet {
             return;
         }
         
-        // Verificar si el usuario está en nuestro sistema
-        UserCredentials credentials = userCredentials.get(dni);
-        if (credentials == null || !credentials.password.equals(password)) {
-            response.sendRedirect("login.jsp?error=Credenciales inválidas");
-            return;
-        }
-        
         try {
-            // Autenticar con CentroEducativo
-            String loginUrl = CENTRO_EDUCATIVO_URL + "/CentroEducativo/login";
-            String jsonBody = String.format("{\"dni\":\"%s\",\"password\":\"%s\"}", dni, password);
+            // Crear el cuerpo JSON para la petición
+            String jsonBody = String.format("{\"dni\": \"%s\", \"password\": \"%s\"}", dni, password);
             
+            // Crear y enviar la petición HTTP POST
             HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(loginUrl))
+                    .uri(URI.create(CENTRO_EDUCATIVO_URL + "/CentroEducativo/login"))
                     .header("Content-Type", "application/json")
+                    .header("accept", "text/plain")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
             
@@ -69,24 +51,19 @@ public class LoginServlet extends HttpServlet {
                 String key = httpResponse.body();
                 session.setAttribute("key", key);
                 session.setAttribute("dni", dni);
-                session.setAttribute("password", password);
                 
-                response.sendRedirect("main.jsp");
+                // Redirigir según el rol
+                if (request.isUserInRole("rolpro")) {
+                    response.sendRedirect("profesor/index.jsp");
+                } else {
+                    response.sendRedirect("alumno/index.jsp");
+                }
             } else {
-                response.sendRedirect("login.jsp?error=Error de autenticación con CentroEducativo");
+                response.sendRedirect("login.jsp?error=Error de autenticación con CentroEducativo: " + 
+                    httpResponse.statusCode());
             }
         } catch (Exception e) {
             response.sendRedirect("login.jsp?error=Error de conexión: " + e.getMessage());
-        }
-    }
-    
-    private static class UserCredentials {
-        final String dni;
-        final String password;
-        
-        UserCredentials(String dni, String password) {
-            this.dni = dni;
-            this.password = password;
         }
     }
 } 
