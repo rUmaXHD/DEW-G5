@@ -14,7 +14,7 @@ public class LogServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 	// Ruta FIJa del archivo de logs (ajústala según tu sistema)
     //private static final String LOG_FILE_PATH = "/nol2425/src/main/webapp/WEB-INF/logs/nol_logs.txt";
-    private static final String LOG_FILE_PATH = "/home/dew/Escritorio/nol_logs.txt";
+    private static final String LOG_FILE_PATH = "/nol2425/src/main/webapp/WEB-INF/logs/nol_logs.txt";
     private static final DateTimeFormatter DATE_FORMAT = 
         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 

@@ -4,35 +4,23 @@
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
          version="5.0">
 
-    <!-- Configuración de seguridad -->
+    <!-- Recurso protegido -->
     <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>Área de Alumnos</web-resource-name>
-            <url-pattern>/alumno/*</url-pattern>
-        </web-resource-collection>
-        <auth-constraint>
-            <role-name>rolalu</role-name>
-        </auth-constraint>
-    </security-constraint>
+    <web-resource-collection>
+        <web-resource-name>ZonaSegura</web-resource-name>
+        <url-pattern>/alumno/*</url-pattern>
+        <url-pattern>/profesor/*</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+        <role-name>rolalu</role-name>
+        <role-name>rolpro</role-name>
+    </auth-constraint>
+	</security-constraint>
 
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>Área de Profesores</web-resource-name>
-            <url-pattern>/profesor/*</url-pattern>
-        </web-resource-collection>
-        <auth-constraint>
-            <role-name>rolpro</role-name>
-        </auth-constraint>
-    </security-constraint>
-
-    <!-- Configuración de login -->
-    <login-config>
-        <auth-method>FORM</auth-method>
-        <form-login-config>
-            <form-login-page>/login.jsp</form-login-page>
-            <form-error-page>/login.jsp?error=1</form-error-page>
-        </form-login-config>
-    </login-config>
+    <!-- Configuración de sesión -->
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
 
     <!-- Definición de roles -->
     <security-role>
@@ -42,25 +30,35 @@
         <role-name>rolpro</role-name>
     </security-role>
 
-    <!-- Configuración del archivo de logs -->
-    <context-param>
-        <param-name>log-file-path</param-name>
-        <param-value>/WEB-INF/logs/nol_logs.txt</param-value>
-    </context-param>
+    <!-- Parámetro de configuración de logs -->
+	 <context-param>
+    <param-name>log-file-path</param-name>
+    <param-value>/home/saul/Escritorio/nol_logs.txt</param-value>
+	</context-param>
+	
+	<filter>
+	    <filter-name>Logs</filter-name>
+	    <filter-class>dew.main.filtros.Logs</filter-class>
+	</filter>
+	
+	<filter-mapping>
+	    <filter-name>Logs</filter-name>
+	    <url-pattern>/*</url-pattern> <!-- Todas las rutas -->
+	</filter-mapping>
 
-    <!-- Servlet de redirección -->
-    <servlet>
-        <servlet-name>RedirectServlet</servlet-name>
-        <servlet-class>servlet.RedirectServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>RedirectServlet</servlet-name>
-        <url-pattern>/redirect</url-pattern>
-    </servlet-mapping>
+    <!-- Configuración de autenticación FORM -->
+    <login-config>
+        <auth-method>FORM</auth-method>
+        <realm-name>RealmAlumnos</realm-name>
+        <form-login-config>
+            <form-login-page>/login.jsp</form-login-page>
+            <form-error-page>/login.jsp?error=1</form-error-page>
+        </form-login-config>
+    </login-config>
 
-    <!-- Página de inicio por defecto -->
+    <!-- Página de inicio -->
     <welcome-file-list>
-        <welcome-file>redirect</welcome-file>
+        <welcome-file>/LoginServlet</welcome-file>
     </welcome-file-list>
 
 </web-app>

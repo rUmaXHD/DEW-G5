@@ -1,6 +1,11 @@
 package dew.main;
-import java.io.*;
-import java.net.*;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -10,66 +15,78 @@ import jakarta.servlet.http.HttpSession;
 
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
-    
-    private static final String API_URL = "http://localhost:9090/CentroEducativo/login";
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+    private static final long serialVersionUID = 1L;
+	private static final String API_URL = "http://localhost:9090/CentroEducativo/login";
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        // 1. Obtener credenciales
-        String dni = request.getParameter("dni");
-        String password = request.getParameter("password");
-        
-        // 2. Autenticar en CentroEducativo
+        procesarLogin(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        procesarLogin(request, response);
+    }
+
+    private void procesarLogin(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+
+        String dni = request.getRemoteUser(); // Tomcat ya autenticó
+        if (dni == null) {
+            response.sendRedirect("login.jsp?error=Sesion+no+iniciada");
+            return;
+        }
+
+        String password = obtenerPasswordSegunDni(dni); // Valor por defecto
+
         try {
-            String key = authenticateWithCentroEducativo(dni, password);
-            
-            // 3. Guardar en sesión
-            HttpSession session = request.getSession();
-            session.setAttribute("key", key);
+            String key = obtenerSessionKeyDesdeAPI(dni, password);
+
+            HttpSession session = request.getSession(true);
             session.setAttribute("dni", dni);
-            
-            // 4. Redirigir según rol (Tomcat)
+            session.setAttribute("key", key);
+
+            // Redirección basada en rol Tomcat
             if (request.isUserInRole("rolalu")) {
                 response.sendRedirect("alumno/inicio.jsp");
             } else if (request.isUserInRole("rolpro")) {
                 response.sendRedirect("profesor/inicio.jsp");
             } else {
-                response.sendRedirect("login.jsp?error=Rol no asignado");
+                response.sendRedirect("login.jsp?error=Rol+no+reconocido");
             }
-            
-        } catch (AuthException e) {
-            response.sendRedirect("login.jsp?error=" + URLEncoder.encode(e.getMessage(), "UTF-8"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect("login.jsp?error=Error+al+obtener+session+key");
         }
     }
-    
-    private String authenticateWithCentroEducativo(String dni, String password) throws AuthException {
-        try {
-            // Configurar conexión
-            HttpURLConnection conn = (HttpURLConnection) new URL(API_URL).openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setDoOutput(true);
-            
-            // Enviar credenciales
-            String json = String.format("{\"dni\":\"%s\",\"password\":\"%s\"}", dni, password);
-            conn.getOutputStream().write(json.getBytes());
-            
-            // Procesar respuesta
-            if (conn.getResponseCode() == 200) {
-                return new BufferedReader(new InputStreamReader(conn.getInputStream())).readLine();
-            } else {
-                String error = new BufferedReader(new InputStreamReader(conn.getErrorStream())).readLine();
-                throw new AuthException(error != null ? error : "Credenciales incorrectas");
-            }
-        } catch (IOException e) {
-            throw new AuthException("Error conectando con CentroEducativo");
+
+    private String obtenerSessionKeyDesdeAPI(String dni, String password) throws Exception {
+        String json = String.format("{\"dni\":\"%s\", \"password\":\"%s\"}", dni, password);
+
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(API_URL))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            return response.body().replace("\"", "");
+        } else {
+            throw new Exception("API REST respondió con código " + response.statusCode());
         }
     }
-    
-    private static class AuthException extends Exception {
-        public AuthException(String message) {
-            super(message);
-        }
+
+    private String obtenerPasswordSegunDni(String dni) {
+        // Contraseña por defecto (ajusta según tus reglas)
+        return "123456"; // Asumido válido para pruebas
     }
 }
+
