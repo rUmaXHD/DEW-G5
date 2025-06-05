@@ -34,10 +34,10 @@ public class LoginServlet extends HttpServlet {
     private void procesarPostLogin(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        String dni = request.getRemoteUser();
+        String dni = request.getRemoteUser(); // Usuario autenticado por BASIC Auth
 
         if (dni == null) {
-            response.sendRedirect("login.jsp?error=Sesion+no+iniciada");
+            mostrarAlertaError(response, "Sesión no iniciada");
             return;
         }
 
@@ -48,29 +48,47 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        // Aquí colocamos la contraseña por defecto o recuperada de forma segura
-        String password = obtenerPasswordPorDni(dni);
+        String password = obtenerPasswordPorDni(dni); // En entorno real: usar almacén seguro
 
         try {
             String key = obtenerSessionKeyDesdeAPI(dni, password);
+            if (key == null || key.isBlank()) {
+                mostrarAlertaError(response, "Credenciales inválidas en CentroEducativo");
+                return;
+            }
+
             session.setAttribute("dni", dni);
+            session.setAttribute("password", password);
             session.setAttribute("key", key);
 
             redirigirSegunRol(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect("login.jsp?error=Error+al+obtener+session+key");
+            mostrarAlertaError(response, "Error al conectar con CentroEducativo");
         }
+    }
+
+    private void mostrarAlertaError(HttpServletResponse response, String mensaje) throws IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        response.getWriter().write(
+            "<html><head><script type='text/javascript'>"
+            + "alert('" + mensaje.replace("'", "\\'") + "');"
+            + "history.back();"
+            + "</script></head><body></body></html>"
+        );
     }
 
     private void redirigirSegunRol(HttpServletRequest request, HttpServletResponse response) throws IOException {
         if (request.isUserInRole("rolalu")) {
-            response.sendRedirect("alumno/inicio.jsp");
+            // Redirige a /alumno/inicio.jsp
+            response.sendRedirect(request.getContextPath() + "/alumno/inicio.jsp");
         } else if (request.isUserInRole("rolpro")) {
-            response.sendRedirect("profesor/inicio.jsp");
+            // Redirige a /profesor/inicio.jsp
+            response.sendRedirect(request.getContextPath() + "/profesor/inicio.jsp");
         } else {
-            response.sendRedirect("login.jsp?error=Rol+no+reconocido");
+            // Rol no reconocido, muestra error con alert
+            mostrarAlertaError(response, "Rol no reconocido");
         }
     }
 
@@ -88,15 +106,20 @@ public class LoginServlet extends HttpServlet {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() == 200) {
-            return response.body().replace("\"", "");
+            // Se espera algo como: {"key":"abc123"}
+            String responseBody = response.body();
+            int start = responseBody.indexOf(":\"") + 2;
+            int end = responseBody.lastIndexOf("\"");
+            return (start > 0 && end > start) ? responseBody.substring(start, end) : null;
         } else {
-            throw new Exception("API REST respondió con código " + response.statusCode());
+            return null;
         }
     }
 
+
     private String obtenerPasswordPorDni(String dni) {
-        // Para pruebas usamos un password fijo, idealmente se debe obtener de forma segura
-        return "123456";
+        // En producción deberías obtener esto de un almacén seguro o base de datos
+        return "123456"; // Contraseña por defecto para todos los usuarios demo
     }
 }
 
