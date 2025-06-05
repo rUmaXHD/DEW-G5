@@ -1,5 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
+<%
+    String asignaturasJson = (String) request.getAttribute("asignaturasJson");
+%>
 <html>
 <head>
     <title>Inicio Alumno</title>
@@ -14,27 +17,23 @@
     
     <div class="container mt-4">
         <h2>Mis Asignaturas</h2>
-        <%-- Aquí irá el listado dinámico --%>
+        
+        <script>
+    		const data = <%= asignaturasJson %>;
+
+		    document.write("<ul>");
+		    data.forEach(a => {
+		        document.write("<li>" + JSON.stringify(a) + "</li>");
+		    });
+		    document.write("</ul>");
+	</script>
+        
+        
         <div id="asignaturas" class="mt-3">
             <!-- Los datos se cargarán con JavaScript -->
         </div>
     </div>
-
-    <script>
-        // JavaScript para cargar datos via AJAX
-        fetch('AsignaturasServlet')
-            .then(response => response.json())
-            .then(data => {
-                let html = '';
-                data.forEach(asignatura => {
-                    html += `<div class="card mb-2">
-                                <div class="card-body">
-                                    ${asignatura.nombre} (${asignatura.acronimo})
-                                </div>
-                            </div>`;
-                });
-                document.getElementById('asignaturas').innerHTML = html;
-            });
-    </script>
+    
+    <a href="${pageContext.request.contextPath}/LogoutServlet">Cerrar sesión</a>
 </body>
 </html>
