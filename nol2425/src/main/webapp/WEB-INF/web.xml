@@ -1,62 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
-         version="5.0">
-
-    <!-- Recurso protegido -->
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>ZonaSegura</web-resource-name>
-            <url-pattern>/*</url-pattern>
-            <url-pattern>/alumno/*</url-pattern>
-            <url-pattern>/profesor/*</url-pattern>
-			<url-pattern>/LoginServlet</url-pattern> <!-- Protegemos también el servlet -->
-        </web-resource-collection>
-        <auth-constraint>
-            <role-name>rolalu</role-name>
-            <role-name>rolpro</role-name>
-        </auth-constraint>
-    </security-constraint>
-
-    <!-- Configuración de autenticación BASIC -->
-    <login-config>
-        <auth-method>BASIC</auth-method>
-        <realm-name>NotasOnline</realm-name>
-    </login-config>
-
-    <!-- Definición de roles -->
-    <security-role>
-        <role-name>rolalu</role-name>
-    </security-role>
-    <security-role>
-        <role-name>rolpro</role-name>
-    </security-role>
-
-    <!-- Configuración de sesión -->
-    <session-config>
-        <session-timeout>30</session-timeout>
-    </session-config>
-
-    <!-- Parámetro de configuración de logs -->
-    <context-param>
-        <param-name>log-file-path</param-name>
-        <param-value>/home/rumax_hd/Escritorio/nol_logs.txt</param-value>
-    </context-param>
-
-    <!-- Filtro de logs -->
-    <filter>
-        <filter-name>Logs</filter-name>
-        <filter-class>dew.main.filtros.Logs</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>Logs</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-
-    <!-- Página de inicio -->
-	<welcome-file-list>
-	    <welcome-file>LoginServlet</welcome-file>
-	</welcome-file-list>
-
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="https://jakarta.ee/xml/ns/jakartaee" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd" version="5.0">
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>ZonaSegura</web-resource-name>
+      <url-pattern>/*</url-pattern>
+      <url-pattern>/alumno/*</url-pattern>
+      <url-pattern>/profesor/*</url-pattern>
+      <url-pattern>/LoginServlet</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>rolalu</role-name>
+      <role-name>rolpro</role-name>
+    </auth-constraint>
+  </security-constraint>
+  <login-config>
+    <auth-method>BASIC</auth-method>
+    <realm-name>NotasOnline</realm-name>
+  </login-config>
+  <security-role>
+    <role-name>rolalu</role-name>
+  </security-role>
+  <security-role>
+    <role-name>rolpro</role-name>
+  </security-role>
+  <session-config>
+    <session-timeout>30</session-timeout>
+  </session-config>
+  <context-param>
+    <param-name>log-file-path</param-name>
+    <param-value>/home/rumax_hd/Escritorio/nol_logs.txt</param-value>
+  </context-param>
+  <filter>
+    <filter-name>Logs</filter-name>
+    <filter-class>dew.main.filtros.Logs</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>Logs</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  <welcome-file-list>
+    <welcome-file>LoginServlet</welcome-file>
+  </welcome-file-list>
+  <servlet>
+    <description></description>
+    <display-name>InicioProfesorServlet</display-name>
+    <servlet-name>InicioProfesorServlet</servlet-name>
+    <jsp-file>/profesor/inicio.jsp</jsp-file>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>InicioProfesorServlet</servlet-name>
+    <url-pattern>/InicioProfesorServlet</url-pattern>
+  </servlet-mapping>
 </web-app>

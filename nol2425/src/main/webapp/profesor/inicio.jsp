@@ -1,40 +1,39 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.util.List" %>
+<%@ page import="profesor.InicioProfesorServlet.Asignatura" %>
+<%
+    List<Asignatura> asignaturas = (List<Asignatura>) request.getAttribute("asignaturas");
+%>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Inicio Alumno</title>
+    <title>Inicio Profesor</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="#">Bienvenido Alumno</a>
+            <a class="navbar-brand" href="#">Bienvenido Profesor</a>
         </div>
     </nav>
     
     <div class="container mt-4">
-        <h2>Mis Asignaturas</h2>
-        <%-- Aquí irá el listado dinámico --%>
+        <h2>Asignaturas que impartes</h2>
         <div id="asignaturas" class="mt-3">
-            <!-- Los datos se cargarán con JavaScript -->
+            <% if (asignaturas != null && !asignaturas.isEmpty()) {
+                   for (Asignatura a : asignaturas) { %>
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <a href="listaAlumnos?asig=<%= a.acronimo %>" class="text-decoration-none">
+                            <%= a.nombre %> (<%= a.acronimo %>)
+                        </a>
+                    </div>
+                </div>
+            <%   }
+               } else { %>
+                <div class="alert alert-warning">No se han encontrado asignaturas.</div>
+            <% } %>
         </div>
     </div>
-
-    <script>
-        // JavaScript para cargar datos via AJAX
-        fetch('AsignaturasServlet')
-            .then(response => response.json())
-            .then(data => {
-                let html = '';
-                data.forEach(asignatura => {
-                    html += `<div class="card mb-2">
-                                <div class="card-body">
-                                    ${asignatura.nombre} (${asignatura.acronimo})
-                                </div>
-                            </div>`;
-                });
-                document.getElementById('asignaturas').innerHTML = html;
-            });
-    </script>
 </body>
 </html>
