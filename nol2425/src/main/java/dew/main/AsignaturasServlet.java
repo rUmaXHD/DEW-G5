@@ -2,72 +2,115 @@ package dew.main;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.net.http.*;
+import java.util.Arrays;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.*;
 
-
-/**
- * Servlet implementation class AsignaturasServlet
- */
-@WebServlet("/alumno/asignaturas")
+@WebServlet("/AsignaturasServlet")
 public class AsignaturasServlet extends HttpServlet {
 
-    private static final String API_URL_BASE = "http://localhost:9090/CentroEducativo/alumnos/";
+    private static final long serialVersionUID = 1L;
+    private static final String BASE_URL = "http://localhost:9090/CentroEducativo";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        procesarAsignaturas(request, response);
+    }
 
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("dni") == null || session.getAttribute("key") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.html"); // o muestra error
-            return;
-        }
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        procesarAsignaturas(request, response);
+    }
 
+    private void procesarAsignaturas(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+    	
+        HttpSession session = request.getSession();
         String dni = (String) session.getAttribute("dni");
         String key = (String) session.getAttribute("key");
 
-        String apiUrl = API_URL_BASE + dni + "/asignaturas";
+        if (dni == null || key == null || dni.isBlank() || key.isBlank()) {
+            mostrarAlertaError(response, "Sesión inválida o expirada.");
+            return;
+        }
+
+        boolean esAlumno = request.isUserInRole("rolalu");
+        boolean esProfesor = request.isUserInRole("rolpro");
+
+        if (!esAlumno && !esProfesor) {
+            mostrarAlertaError(response, "Rol no reconocido.");
+            return;
+        }
 
         try {
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(apiUrl))
-                    .header("Authorization", "Bearer " + key) // Cambia si tu API no usa Bearer
-                    .GET()
-                    .build();
+            String[] asignaturas = obtenerAsignaturasDesdeAPI(dni, key, esAlumno);
+            if (asignaturas == null) {
+                mostrarAlertaError(response, "No se pudieron obtener las asignaturas.");
+                return;
+            }
 
-            HttpClient client = HttpClient.newHttpClient();
-            HttpResponse<String> apiResponse = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            String asignaturasSerializado = Arrays.toString(asignaturas);
+            request.setAttribute("asignaturasSerializado", asignaturasSerializado);
 
-            if (apiResponse.statusCode() == 200) {
-                String json = apiResponse.body();
-
-                // Parsear el JSON a lista de objetos (aquí como ejemplo, puedes usar org.json, Gson o Jackson)
-                request.setAttribute("asignaturasJson", json); // O puedes convertir a lista real
+            if (esAlumno) {
                 request.getRequestDispatcher("/alumno/inicio.jsp").forward(request, response);
-            } else if (apiResponse.statusCode() == 401 || apiResponse.statusCode() == 403) {
-                session.invalidate();
-                response.sendRedirect(request.getContextPath() + "/login.html");
             } else {
-                mostrarError(response, "Error al obtener asignaturas del alumno: código " + apiResponse.statusCode());
+                request.getRequestDispatcher("/profesor/inicio.jsp").forward(request, response);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            mostrarError(response, "Error al conectar con la API de asignaturas.");
+            mostrarAlertaError(response, "Error al conectar con CentroEducativo.");
         }
     }
 
-    private void mostrarError(HttpServletResponse response, String mensaje) throws IOException {
+    private String[] obtenerAsignaturasDesdeAPI(String dni, String key, boolean esAlumno) throws Exception {
+        String endpoint = esAlumno ? "/alumnos/" : "/profesores/";
+        String url = BASE_URL + endpoint + dni + "?key=" + key;
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest peticion = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(peticion, HttpResponse.BodyHandlers.ofString());
+        System.out.println("Respuesta CentroEducativo: " + response.body());
+
+        if (response.statusCode() == 200) {
+            String body = response.body();
+
+            // Buscar manualmente el array de asignaturas
+            int start = body.indexOf("\"asignaturas\"");
+            if (start == -1) return new String[0];
+
+            int arrayStart = body.indexOf("[", start);
+            int arrayEnd = body.indexOf("]", arrayStart);
+
+            if (arrayStart == -1 || arrayEnd == -1) return new String[0];
+
+            String rawArray = body.substring(arrayStart + 1, arrayEnd).replace("\"", "").trim();
+            if (rawArray.isEmpty()) return new String[0];
+
+            return Arrays.stream(rawArray.split(","))
+                         .map(String::trim)
+                         .toArray(String[]::new);
+        }
+
+        return new String[0];
+    }
+
+    private void mostrarAlertaError(HttpServletResponse response, String mensaje) throws IOException {
         response.setContentType("text/html;charset=UTF-8");
-        response.getWriter().write("<html><body><h3>" + mensaje + "</h3></body></html>");
+        response.getWriter().write(
+                "<html><head><script type='text/javascript'>"
+                        + "alert('" + mensaje.replace("'", "\\'") + "');"
+                        + "history.back();"
+                        + "</script></head><body></body></html>");
     }
 }

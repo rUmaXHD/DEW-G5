@@ -1,7 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <%
-    String asignaturasJson = (String) request.getAttribute("asignaturasJson");
+    String asignaturasSerializado = (String) request.getAttribute("asignaturasSerializado");
+	if (asignaturasSerializado == null) asignaturasSerializado = "[]";
 %>
 <html>
 <head>
@@ -19,18 +20,27 @@
         <h2>Mis Asignaturas</h2>
         
         <script>
-    		const data = <%= asignaturasJson %>;
-
-		    document.write("<ul>");
-		    data.forEach(a => {
-		        document.write("<li>" + JSON.stringify(a) + "</li>");
-		    });
-		    document.write("</ul>");
-	</script>
+    		const data = <%= asignaturasSerializado %>;
+            const ul = document.getElementById("asignaturas-list");
+            
+            if (Array.isArray(data) && data.length > 0) {
+                data.forEach(a => {
+                    const li = document.createElement("li");
+                    li.className = "list-group-item";
+                    li.textContent = a;
+                    ul.appendChild(li);
+                });
+            } else {
+                const li = document.createElement("li");
+                li.className = "list-group-item text-danger";
+                li.textContent = "No estás matriculado en ninguna asignatura.";
+                ul.appendChild(li);
+            }
+		</script>
         
         
         <div id="asignaturas" class="mt-3">
-            <!-- Los datos se cargarán con JavaScript -->
+			<ul class="list-group" id="asignaturas-list"></ul>
         </div>
     </div>
     
