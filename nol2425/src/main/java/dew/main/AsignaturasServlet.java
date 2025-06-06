@@ -24,7 +24,6 @@ public class AsignaturasServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        procesarAsignaturas(request, response);
     }
 
     private void procesarAsignaturas(HttpServletRequest request, HttpServletResponse response)

@@ -20,6 +20,7 @@
         </div>
     </div>
     
+    
     <a href="${pageContext.request.contextPath}/LogoutServlet">Cerrar sesión</a>
 
     <script>
