@@ -33,6 +33,7 @@ public class AsignaturasServlet extends HttpServlet {
         HttpSession session = request.getSession();
         String dni = (String) session.getAttribute("dni");
         String key = (String) session.getAttribute("key");
+        System.out.println(key);
 
         if (dni == null || key == null || dni.isBlank() || key.isBlank()) {
             mostrarAlertaError(response, "Sesión inválida o expirada.");
@@ -49,23 +50,21 @@ public class AsignaturasServlet extends HttpServlet {
 
         try {
             String[] asignaturas = obtenerAsignaturasDesdeAPI(dni, key, esAlumno);
-            if (asignaturas == null) {
-                mostrarAlertaError(response, "No se pudieron obtener las asignaturas.");
-                return;
-            }
-
-            String asignaturasSerializado = Arrays.toString(asignaturas);
-            request.setAttribute("asignaturasSerializado", asignaturasSerializado);
-
-            if (esAlumno) {
-                request.getRequestDispatcher("/alumno/inicio.jsp").forward(request, response);
+            
+            // Configurar respuesta JSON
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            
+            if (asignaturas == null || asignaturas.length == 0) {
+                response.getWriter().write("[]");
             } else {
-                request.getRequestDispatcher("/profesor/inicio.jsp").forward(request, response);
+                response.getWriter().write(Arrays.toString(asignaturas));
             }
-
+            
         } catch (Exception e) {
             e.printStackTrace();
-            mostrarAlertaError(response, "Error al conectar con CentroEducativo.");
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\":\"Error al obtener asignaturas\"}");
         }
     }
 

@@ -1,9 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
-<%
-    String asignaturasSerializado = (String) request.getAttribute("asignaturasSerializado");
-	if (asignaturasSerializado == null) asignaturasSerializado = "[]";
-%>
 <html>
 <head>
     <title>Inicio Alumno</title>
@@ -19,31 +15,46 @@
     <div class="container mt-4">
         <h2>Mis Asignaturas</h2>
         
-        <script>
-    		const data = <%= asignaturasSerializado %>;
-            const ul = document.getElementById("asignaturas-list");
-            
-            if (Array.isArray(data) && data.length > 0) {
-                data.forEach(a => {
-                    const li = document.createElement("li");
-                    li.className = "list-group-item";
-                    li.textContent = a;
-                    ul.appendChild(li);
-                });
-            } else {
-                const li = document.createElement("li");
-                li.className = "list-group-item text-danger";
-                li.textContent = "No estás matriculado en ninguna asignatura.";
-                ul.appendChild(li);
-            }
-		</script>
-        
-        
-        <div id="asignaturas" class="mt-3">
-			<ul class="list-group" id="asignaturas-list"></ul>
+        <div id="asignaturas-container" class="mt-3">
+            <ul id="asignaturas-list" class="list-group"></ul>
         </div>
     </div>
     
     <a href="${pageContext.request.contextPath}/LogoutServlet">Cerrar sesión</a>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('${pageContext.request.contextPath}/AsignaturasServlet')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la respuesta');
+                    }
+                    return response.json();
+                })
+                .then(asignaturas => {
+                    const list = document.getElementById('asignaturas-list');
+                    list.innerHTML = ''; // Limpiar lista
+                    
+                    if (asignaturas.length > 0) {
+                        asignaturas.forEach(asig => {
+                            const item = document.createElement('li');
+                            item.className = 'list-group-item';
+                            item.textContent = asig;
+                            list.appendChild(item);
+                        });
+                    } else {
+                        const item = document.createElement('li');
+                        item.className = 'list-group-item text-danger';
+                        item.textContent = 'No estás matriculado en ninguna asignatura.';
+                        list.appendChild(item);
+                    }
+                })
+                .catch(error => {
+                    const list = document.getElementById('asignaturas-list');
+                    list.innerHTML = '<li class="list-group-item text-danger">Error al cargar las asignaturas</li>';
+                    console.error('Error:', error);
+                });
+        });
+    </script>
 </body>
 </html>
