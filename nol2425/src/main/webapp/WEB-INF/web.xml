@@ -49,7 +49,7 @@
     <!-- Parámetro de configuración de logs -->
     <context-param>
         <param-name>log-file-path</param-name>
-        <param-value>/home/saul/Escritorio/nol_logs.txt</param-value>
+        <param-value>./nol_logs.txt</param-value>
     </context-param>
 
     <!-- Filtro de logs -->
@@ -61,7 +61,4 @@
         <filter-name>Logs</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-
-  
-
 </web-app>
