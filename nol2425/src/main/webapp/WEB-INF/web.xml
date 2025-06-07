@@ -41,14 +41,5 @@
   <welcome-file-list>
     <welcome-file>LoginServlet</welcome-file>
   </welcome-file-list>
-  <servlet>
-    <description></description>
-    <display-name>InicioProfesorServlet</display-name>
-    <servlet-name>InicioProfesorServlet</servlet-name>
-    <jsp-file>/profesor/inicio.jsp</jsp-file>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>InicioProfesorServlet</servlet-name>
-    <url-pattern>/InicioProfesorServlet</url-pattern>
-  </servlet-mapping>
-</web-app>
+  </web-app>
+  

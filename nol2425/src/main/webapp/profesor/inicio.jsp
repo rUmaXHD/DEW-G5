@@ -1,8 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.util.List" %>
-<%@ page import="profesor.InicioProfesorServlet.Asignatura" %>
+<%@ page import="java.util.*" %>
 <%
-    List<Asignatura> asignaturas = (List<Asignatura>) request.getAttribute("asignaturas");
+    List<Map<String, String>> asignaturas = (List<Map<String, String>>) request.getAttribute("asignaturas");
 %>
 <!DOCTYPE html>
 <html>
@@ -21,16 +20,15 @@
         <h2>Asignaturas que impartes</h2>
         <div id="asignaturas" class="mt-3">
             <% if (asignaturas != null && !asignaturas.isEmpty()) {
-                   for (Asignatura a : asignaturas) { %>
+                   for (Map<String, String> a : asignaturas) { %>
                 <div class="card mb-2">
                     <div class="card-body">
-                        <a href="listaAlumnos?asig=<%= a.acronimo %>" class="text-decoration-none">
-                            <%= a.nombre %> (<%= a.acronimo %>)
+                        <a href="listaAlumnos?asig=<%= a.get("acronimo") %>" class="text-decoration-none">
+                            <%= a.get("nombre") %> (<%= a.get("acronimo") %>)
                         </a>
                     </div>
                 </div>
-            <%   }
-               } else { %>
+            <% } } else { %>
                 <div class="alert alert-warning">No se han encontrado asignaturas.</div>
             <% } %>
         </div>

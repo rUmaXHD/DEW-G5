@@ -52,7 +52,7 @@ public class LoginServlet extends HttpServlet {
 
         try {
             String key = obtenerSessionKeyDesdeAPI(dni, password);
-            if (key == null || key.isBlank()) {
+            if (key == "-1" || key.isBlank()) {
                 mostrarAlertaError(response, "Credenciales inválidas en CentroEducativo");
                 session.invalidate(); 
                 return;
