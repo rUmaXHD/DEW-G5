@@ -28,7 +28,7 @@
   </session-config>
   <context-param>
     <param-name>log-file-path</param-name>
-    <param-value>/home/rumax_hd/Escritorio/nol_logs.txt</param-value>
+    <param-value>./nol_logs.txt</param-value>
   </context-param>
   <filter>
     <filter-name>Logs</filter-name>
