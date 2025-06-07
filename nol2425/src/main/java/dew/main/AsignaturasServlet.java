@@ -49,9 +49,9 @@ public class AsignaturasServlet extends HttpServlet {
             // Obtener información del alumno
         	
         	System.out.println("realizando peticion a api");
-            Response alumnoResponse = client.target(API_BASE_URL + "/alumnos/" + dni)
-                                    .queryParam("key", key)
-                                    .request(MediaType.APPLICATION_JSON)
+            Response alumnoResponse = client.target(API_BASE_URL + "/alumnos/" + dni +"?key="+ key)
+                                    
+                                    .request(MediaType.APPLICATION_JSON) 
                                     .get();
             
             System.out.println(alumnoResponse.getStatus());
