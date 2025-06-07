@@ -18,7 +18,7 @@ public class LoginServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     private static final String API_URL = "http://localhost:9090/CentroEducativo/login";
-
+    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -34,44 +34,61 @@ public class LoginServlet extends HttpServlet {
     private void procesarPostLogin(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        String dni = request.getRemoteUser();
+        String[] creds = obtenerCredencialesDesdeAuthorization(request);
+        if (creds == null) {
+            mostrarAlertaError(response, "No se pudieron obtener las credenciales.");
+            return;
+        }
 
-        if (dni == null) {
-            response.sendRedirect("login.jsp?error=Sesion+no+iniciada");
+        String dni = creds[0];
+        String password = creds[1];
+
+        if (dni == null || dni.isBlank()) {
+            mostrarAlertaError(response, "Sesión no iniciada");
             return;
         }
 
         HttpSession session = request.getSession();
 
-        if (session.getAttribute("key") != null) {
-            redirigirSegunRol(request, response);
-            return;
-        }
-
-        // Aquí colocamos la contraseña por defecto o recuperada de forma segura
-        String password = obtenerPasswordPorDni(dni);
-
         try {
             String key = obtenerSessionKeyDesdeAPI(dni, password);
-            session.setAttribute("dni", dni);
-            session.setAttribute("key", key);
+            if (key == null || key.isBlank()) {
+                mostrarAlertaError(response, "Credenciales inválidas en CentroEducativo");
+                session.invalidate(); 
+                return;
+            }
 
-            redirigirSegunRol(request, response);
+            session.setAttribute("dni", dni);
+            session.setAttribute("password", password);
+            session.setAttribute("key", key);
+            
+
+            // Redirige según el rol
+            if (request.isUserInRole("rolalu")) {
+                response.sendRedirect(request.getContextPath() + "/alumno/inicio.jsp");
+            } else if (request.isUserInRole("rolpro")) {
+                response.sendRedirect(request.getContextPath() + "/profesor/inicio.jsp");
+            } else {
+                mostrarAlertaError(response, "Rol no reconocido");
+                session.invalidate(); 
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect("login.jsp?error=Error+al+obtener+session+key");
+            mostrarAlertaError(response, "Error al conectar con CentroEducativo");
         }
     }
 
-    private void redirigirSegunRol(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        if (request.isUserInRole("rolalu")) {
-            response.sendRedirect("alumno/inicio.jsp");
-        } else if (request.isUserInRole("rolpro")) {
-            response.sendRedirect("profesor/inicio.jsp");
-        } else {
-            response.sendRedirect("login.jsp?error=Rol+no+reconocido");
+    private String[] obtenerCredencialesDesdeAuthorization(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+
+        if (authHeader != null && authHeader.startsWith("Basic ")) {
+            String base64Credentials = authHeader.substring("Basic ".length());
+            byte[] credDecoded = java.util.Base64.getDecoder().decode(base64Credentials);
+            String credentials = new String(credDecoded);
+            return credentials.split(":", 2);
         }
+        return null;
     }
 
     private String obtenerSessionKeyDesdeAPI(String dni, String password) throws Exception {
@@ -86,18 +103,24 @@ public class LoginServlet extends HttpServlet {
                 .build();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        System.out.println("Respuesta login API: " + response.body());
 
         if (response.statusCode() == 200) {
-            return response.body().replace("\"", "");
+            String responseBody = response.body();
+            return responseBody;
         } else {
-            throw new Exception("API REST respondió con código " + response.statusCode());
+            return null;
         }
     }
 
-    private String obtenerPasswordPorDni(String dni) {
-        // Para pruebas usamos un password fijo, idealmente se debe obtener de forma segura
-        return "123456";
+    private void mostrarAlertaError(HttpServletResponse response, String mensaje) throws IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        response.getWriter().write(
+            "<html><head><script type='text/javascript'>"
+            + "alert('" + mensaje.replace("'", "\\'") + "');"
+            + "history.back();"
+            + "</script></head><body></body></html>"
+        );
     }
 }
-
 

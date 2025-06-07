@@ -1,40 +1,57 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.util.*" %>
+<%
+    String asignaturasJson = (String) request.getAttribute("asignaturasData");
+    String nombreAlumno = (String) request.getAttribute("nombreAlumno");
+    String dniAlumno = (String) request.getAttribute("dniAlumno");
+%>
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Inicio Alumno</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+    <meta charset="UTF-8">
+    <title>Inicio - Alumno</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        .asignatura { border: 1px solid #ccc; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; background-color: #f9f9f9; }
+        .asignatura h3 { margin-top: 0; }
+        ul { padding-left: 1.5rem; }
+    </style>
+</head>		
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="#">Bienvenido Alumno</a>
-        </div>
-    </nav>
-    
-    <div class="container mt-4">
-        <h2>Mis Asignaturas</h2>
-        <%-- Aquí irá el listado dinámico --%>
-        <div id="asignaturas" class="mt-3">
-            <!-- Los datos se cargarán con JavaScript -->
-        </div>
-    </div>
+    <h1>Bienvenido, <%= nombreAlumno != null ? nombreAlumno : "Alumno" %></h1>
+    <p><strong>DNI:</strong> <%= dniAlumno != null ? dniAlumno : "Desconocido" %></p>
+
+    <h2>Asignaturas</h2>
+    <div id="asignaturas"></div>
 
     <script>
-        // JavaScript para cargar datos via AJAX
-        fetch('AsignaturasServlet')
-            .then(response => response.json())
-            .then(data => {
-                let html = '';
-                data.forEach(asignatura => {
-                    html += `<div class="card mb-2">
-                                <div class="card-body">
-                                    ${asignatura.nombre} (${asignatura.acronimo})
-                                </div>
-                            </div>`;
-                });
-                document.getElementById('asignaturas').innerHTML = html;
+        const asignaturas = <%= asignaturasJson != null ? asignaturasJson : "[]" %>;
+
+        const contenedor = document.getElementById("asignaturas");
+
+        if (asignaturas.length === 0) {
+            contenedor.innerHTML = "<p>No estás inscrito en ninguna asignatura.</p>";
+        } else {
+            asignaturas.forEach(asig => {
+                const div = document.createElement("div");
+                div.className = "asignatura";
+
+                const miembros = asig.miembros && asig.miembros.length > 0
+                    ? `<ul>${asig.miembros.map(m => `<li>${m}</li>`).join("")}</ul>`
+                    : "<p><em>Sin compañeros asignados.</em></p>";
+
+                div.innerHTML = `
+                    <h3>${asig.nombre} (${asig.codigo})</h3>
+                    <p><strong>Curso:</strong> ${asig.curso}</p>
+                    <p><strong>Cuatrimestre:</strong> ${asig.cuatrimestre}</p>
+                    <p><strong>Créditos:</strong> ${asig.creditos}</p>
+                    <p><strong>Grupo:</strong> ${asig.grupoNombre ?? 'N/D'}</p>
+                    <p><strong>Miembros:</strong></p>
+                    ${miembros}
+                `;
+                contenedor.appendChild(div);
             });
+        }
     </script>
 </body>
 </html>

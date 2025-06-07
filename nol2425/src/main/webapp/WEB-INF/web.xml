@@ -6,21 +6,27 @@
 
     <!-- Recurso protegido -->
     <security-constraint>
-    <web-resource-collection>
-        <web-resource-name>ZonaSegura</web-resource-name>
-        <url-pattern>/alumno/*</url-pattern>
-        <url-pattern>/profesor/*</url-pattern>
-    </web-resource-collection>
-    <auth-constraint>
-        <role-name>rolalu</role-name>
-        <role-name>rolpro</role-name>
-    </auth-constraint>
-	</security-constraint>
+        <web-resource-collection>
+            <web-resource-name>ZonaSegura</web-resource-name>
+            <url-pattern>/*</url-pattern>
+            <url-pattern>/alumno/*</url-pattern>
+            <url-pattern>/profesor/*</url-pattern>
+			<url-pattern>/LoginServlet</url-pattern> 
+			<url-pattern>/AsignaturasServlet</url-pattern> 
+			
+			<!-- Protegemos también el servlet -->
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>rolalu</role-name>
+            <role-name>rolpro</role-name>
+        </auth-constraint>
+    </security-constraint>
 
-    <!-- Configuración de sesión -->
-    <session-config>
-        <session-timeout>30</session-timeout>
-    </session-config>
+    <!-- Configuración de autenticación BASIC -->
+    <login-config>
+        <auth-method>BASIC</auth-method>
+        <realm-name>NotasOnline</realm-name>
+    </login-config>
 
     <!-- Definición de roles -->
     <security-role>
@@ -30,35 +36,30 @@
         <role-name>rolpro</role-name>
     </security-role>
 
-    <!-- Parámetro de configuración de logs -->
-	 <context-param>
-    <param-name>log-file-path</param-name>
-    <param-value>/home/saul/Escritorio/nol_logs.txt</param-value>
-	</context-param>
-	
-	<filter>
-	    <filter-name>Logs</filter-name>
-	    <filter-class>dew.main.filtros.Logs</filter-class>
-	</filter>
-	
-	<filter-mapping>
-	    <filter-name>Logs</filter-name>
-	    <url-pattern>/*</url-pattern> <!-- Todas las rutas -->
-	</filter-mapping>
+    <!-- Configuración de sesión -->
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
 
-    <!-- Configuración de autenticación FORM -->
-    <login-config>
-        <auth-method>FORM</auth-method>
-        <realm-name>RealmAlumnos</realm-name>
-        <form-login-config>
-            <form-login-page>/login.jsp</form-login-page>
-            <form-error-page>/login.jsp?error=1</form-error-page>
-        </form-login-config>
-    </login-config>
+    <!-- Parámetro de configuración de logs -->
+    <context-param>
+        <param-name>log-file-path</param-name>
+        <param-value>/home/saul/Escritorio/nol_logs.txt</param-value>
+    </context-param>
+
+    <!-- Filtro de logs -->
+    <filter>
+        <filter-name>Logs</filter-name>
+        <filter-class>dew.main.filtros.Logs</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>Logs</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
     <!-- Página de inicio -->
-    <welcome-file-list>
-        <welcome-file>/LoginServlet</welcome-file>
-    </welcome-file-list>
+	<welcome-file-list>
+	    <welcome-file>LoginServlet</welcome-file>
+	</welcome-file-list>
 
 </web-app>
