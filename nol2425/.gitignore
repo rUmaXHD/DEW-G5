@@ -2,3 +2,4 @@ build/
 target/
 bin/
 nol_logs.txt
+.settings/

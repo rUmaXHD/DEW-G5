@@ -41,7 +41,7 @@
                     <p><strong>Curso:</strong> ${asig.curso}</p>
                     <p><strong>Cuatrimestre:</strong> ${asig.cuatrimestre}</p>
                     <p><strong>Créditos:</strong> ${asig.creditos}</p>
-                    <p><strong>Grupo:</strong> ${asig.grupoNombre ?? 'N/D'}</p>
+                    <p><strong>Grupo:</strong> ${asig.grupoNombre}</p>
                     <p><strong>Miembros:</strong></p>
                 `;
 
