@@ -65,11 +65,11 @@ public class LoginServlet extends HttpServlet {
 
             // Redirige según el rol
             if (request.isUserInRole("rolalu")) {
-                response.sendRedirect(request.getContextPath() + "/alumno/inicio.jsp");
+                response.sendRedirect(request.getContextPath() + "/asignaturas");
             } else if (request.isUserInRole("rolpro")) {
                 response.sendRedirect(request.getContextPath() + "/profesor/inicio.jsp");
             } else {
-                mostrarAlertaError(response, "Rol no reconocido");
+                mostrarAlertaError(response, "Rol no reconocido");	
                 session.invalidate(); 
             }
 

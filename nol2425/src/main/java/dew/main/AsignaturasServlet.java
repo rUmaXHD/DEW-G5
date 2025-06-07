@@ -1,114 +1,152 @@
 package dew.main;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.*;
-import java.util.Arrays;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.MediaType;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
-@WebServlet("/AsignaturasServlet")
+@WebServlet("/asignaturas")
 public class AsignaturasServlet extends HttpServlet {
-
     private static final long serialVersionUID = 1L;
-    private static final String BASE_URL = "http://localhost:9090/CentroEducativo";
-
+	private Client client;
+    private Gson gson;
+    private static final String API_BASE_URL = "http://localhost:9090/CentroEducativo";
+    
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        procesarAsignaturas(request, response);
+    public void init() {
+        client = ClientBuilder.newClient();
+        gson = new Gson();
     }
-
+    
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
-    }
-
-    private void procesarAsignaturas(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
-    	
-        HttpSession session = request.getSession();
-        String dni = (String) session.getAttribute("dni");
+        
+        HttpSession session = req.getSession(false);
+        if (session == null || session.getAttribute("key") == null) {
+            resp.sendRedirect(req.getContextPath() + "/LoginServlet");
+            return;
+        }
+        
         String key = (String) session.getAttribute("key");
-        System.out.println(key);
-
-        if (dni == null || key == null || dni.isBlank() || key.isBlank()) {
-            mostrarAlertaError(response, "Sesión inválida o expirada.");
-            return;
-        }
-
-        boolean esAlumno = request.isUserInRole("rolalu");
-        boolean esProfesor = request.isUserInRole("rolpro");
-
-        if (!esAlumno && !esProfesor) {
-            mostrarAlertaError(response, "Rol no reconocido.");
-            return;
-        }
-
+        String dni = (String) session.getAttribute("dni");
+        
         try {
-            String[] asignaturas = obtenerAsignaturasDesdeAPI(dni, key, esAlumno);
+            // Obtener información del alumno
+        	
+        	System.out.println("realizando peticion a api");
+            Response alumnoResponse = client.target(API_BASE_URL + "/alumnos/" + dni)
+                                    .queryParam("key", key)
+                                    .request(MediaType.APPLICATION_JSON)
+                                    .get();
             
-            // Configurar respuesta JSON
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-            
-            if (asignaturas == null || asignaturas.length == 0) {
-                response.getWriter().write("[]");
-            } else {
-                response.getWriter().write(Arrays.toString(asignaturas));
+            System.out.println(alumnoResponse.getStatus());
+            if (alumnoResponse.getStatus() != 200) {
+                throw new ServletException("Error al obtener información del alumno");
             }
+            
+            JsonObject alumnoData = gson.fromJson(alumnoResponse.readEntity(String.class), JsonObject.class);
+            
+            // Obtener asignaturas del alumno
+            Response asignaturasResponse = client.target(API_BASE_URL + "/alumnos/" + dni + "/asignaturas")
+                                               .queryParam("key", key)
+                                               .request(MediaType.APPLICATION_JSON)
+                                               .get();
+            
+            if (asignaturasResponse.getStatus() != 200) {
+                throw new ServletException("Error al obtener asignaturas del alumno");
+            }
+            
+            JsonArray asignaturasArray = gson.fromJson(asignaturasResponse.readEntity(String.class), JsonArray.class);
+            List<Map<String, Object>> asignaturasInfo = new ArrayList<>();
+            
+            // Obtener detalles de cada asignatura
+            for (JsonElement asigElement : asignaturasArray) {
+                String acronimo = asigElement.getAsString();
+                Response asigDetalleResponse = client.target(API_BASE_URL + "/asignaturas/" + acronimo)
+                                                   .queryParam("key", key)
+                                                   .request(MediaType.APPLICATION_JSON)
+                                                   .get();
+                System.out.println(asigDetalleResponse);
+              
+                if (asigDetalleResponse.getStatus() == 200) {
+                    JsonObject asigDetalle = gson.fromJson(asigDetalleResponse.readEntity(String.class), JsonObject.class);
+                    Map<String, Object> asignaturaMap = new HashMap<>();
+                    asignaturaMap.put("codigo", asigDetalle.get("acronimo").getAsString());
+                    asignaturaMap.put("nombre", asigDetalle.get("nombre").getAsString());
+                    asignaturaMap.put("curso", asigDetalle.get("curso").getAsInt());
+                    asignaturaMap.put("cuatrimestre", asigDetalle.get("cuatrimestre").getAsString());
+                    asignaturaMap.put("creditos", asigDetalle.get("creditos").getAsDouble());
+                    
+                    // Obtener información del grupo
+                    Response grupoResponse = client.target(API_BASE_URL + "/asignaturas/" + acronimo + "/grupos")
+                                                 .queryParam("key", key)
+                                                 .request(MediaType.APPLICATION_JSON)
+                                                 .get();
+                    
+                    if (grupoResponse.getStatus() == 200) {
+                        JsonArray grupos = gson.fromJson(grupoResponse.readEntity(String.class), JsonArray.class);
+                        if (grupos.size() > 0) {
+                            JsonObject primerGrupo = grupos.get(0).getAsJsonObject();
+                            asignaturaMap.put("grupoNombre", "Grupo " + primerGrupo.get("nombre").getAsString());
+                            
+                            // Obtener miembros del grupo
+                            List<String> miembros = new ArrayList<>();
+                            Response miembrosResponse = client.target(API_BASE_URL + "/asignaturas/" + acronimo + 
+                                                                    "/grupos/" + primerGrupo.get("nombre").getAsString() + "/alumnos")
+                                                            .queryParam("key", key)
+                                                            .request(MediaType.APPLICATION_JSON)
+                                                            .get();
+                            
+                            if (miembrosResponse.getStatus() == 200) {
+                                JsonArray miembrosArray = gson.fromJson(miembrosResponse.readEntity(String.class), JsonArray.class);
+                                for (JsonElement miembroElement : miembrosArray) {
+                                    JsonObject miembro = miembroElement.getAsJsonObject();
+                                    miembros.add(miembro.get("nombre").getAsString() + " " + 
+                                               miembro.get("apellidos").getAsString());
+                                }
+                            }
+                            asignaturaMap.put("miembros", miembros);
+                        }
+                    }
+                    
+                    asignaturasInfo.add(asignaturaMap);
+                }
+            }
+            
+            // Preparar datos para la JSP
+            req.setAttribute("asignaturasData", gson.toJson(asignaturasInfo));
+            req.setAttribute("nombreAlumno", alumnoData.get("nombre").getAsString() + " " + 
+                                          alumnoData.get("apellidos").getAsString());
+            req.setAttribute("dniAlumno", dni);
+            
+            req.getRequestDispatcher("inicio.jsp").forward(req, resp);
             
         } catch (Exception e) {
             e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("{\"error\":\"Error al obtener asignaturas\"}");
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
+                         "Error al procesar la solicitud: " + e.getMessage());
         }
     }
-
-    private String[] obtenerAsignaturasDesdeAPI(String dni, String key, boolean esAlumno) throws Exception {
-        String endpoint = esAlumno ? "/alumnos/" : "/profesores/";
-        String url = BASE_URL + endpoint + dni + "?key=" + key;
-
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest peticion = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .GET()
-                .build();
-
-        HttpResponse<String> response = client.send(peticion, HttpResponse.BodyHandlers.ofString());
-        System.out.println("Respuesta CentroEducativo: " + response.body());
-
-        if (response.statusCode() == 200) {
-            String body = response.body();
-
-            // Buscar manualmente el array de asignaturas
-            int start = body.indexOf("\"asignaturas\"");
-            if (start == -1) return new String[0];
-
-            int arrayStart = body.indexOf("[", start);
-            int arrayEnd = body.indexOf("]", arrayStart);
-
-            if (arrayStart == -1 || arrayEnd == -1) return new String[0];
-
-            String rawArray = body.substring(arrayStart + 1, arrayEnd).replace("\"", "").trim();
-            if (rawArray.isEmpty()) return new String[0];
-
-            return Arrays.stream(rawArray.split(","))
-                         .map(String::trim)
-                         .toArray(String[]::new);
+    
+    @Override
+    public void destroy() {
+        if (client != null) {
+            client.close();
         }
-
-        return new String[0];
-    }
-
-    private void mostrarAlertaError(HttpServletResponse response, String mensaje) throws IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        response.getWriter().write(
-                "<html><head><script type='text/javascript'>"
-                        + "alert('" + mensaje.replace("'", "\\'") + "');"
-                        + "history.back();"
-                        + "</script></head><body></body></html>");
     }
 }

@@ -36,10 +36,6 @@
                 const div = document.createElement("div");
                 div.className = "asignatura";
 
-                const miembros = asig.miembros && asig.miembros.length > 0
-                    ? `<ul>${asig.miembros.map(m => `<li>${m}</li>`).join("")}</ul>`
-                    : "<p><em>Sin compañeros asignados.</em></p>";
-
                 div.innerHTML = `
                     <h3>${asig.nombre} (${asig.codigo})</h3>
                     <p><strong>Curso:</strong> ${asig.curso}</p>
@@ -47,11 +43,26 @@
                     <p><strong>Créditos:</strong> ${asig.creditos}</p>
                     <p><strong>Grupo:</strong> ${asig.grupoNombre ?? 'N/D'}</p>
                     <p><strong>Miembros:</strong></p>
-                    ${miembros}
                 `;
+
+                const miembrosContainer = document.createElement("div");
+                if (asig.miembros && asig.miembros.length > 0) {
+                    const ul = document.createElement("ul");
+                    asig.miembros.forEach(m => {
+                        const li = document.createElement("li");
+                        li.textContent = m;
+                        ul.appendChild(li);
+                    });
+                    miembrosContainer.appendChild(ul);
+                } else {
+                    miembrosContainer.innerHTML = "<p><em>Sin compañeros asignados.</em></p>";
+                }
+
+                div.appendChild(miembrosContainer);
                 contenedor.appendChild(div);
             });
         }
     </script>
 </body>
 </html>
+

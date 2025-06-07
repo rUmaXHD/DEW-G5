@@ -13,6 +13,8 @@
             <url-pattern>/profesor/*</url-pattern>
 			<url-pattern>/LoginServlet</url-pattern> 
 			<url-pattern>/AsignaturasServlet</url-pattern> 
+			<url-pattern>/asignaturas</url-pattern> 
+			
 			
 			<!-- Protegemos también el servlet -->
         </web-resource-collection>
