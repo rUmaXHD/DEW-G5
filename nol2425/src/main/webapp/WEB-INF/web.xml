@@ -49,7 +49,7 @@
     <!-- Parámetro de configuración de logs -->
     <context-param>
         <param-name>log-file-path</param-name>
-        <param-value>/home/saul/Escritorio/nol_logs.txt</param-value>
+        <param-value>/home/rumax_hd/Escritorio/nol_logs.txt</param-value>
     </context-param>
 
     <!-- Filtro de logs -->

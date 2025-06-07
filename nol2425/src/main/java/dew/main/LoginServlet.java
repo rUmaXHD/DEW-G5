@@ -33,6 +33,17 @@ public class LoginServlet extends HttpServlet {
 
     private void procesarPostLogin(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
+    	// Obtener JSESSIONID desde las cookies del navegador
+    	String jsessionId = null;
+    	jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+    	if (cookies != null) {
+    	    for (jakarta.servlet.http.Cookie cookie : cookies) {
+    	        if ("JSESSIONID".equals(cookie.getName())) {
+    	            jsessionId = cookie.getValue();
+    	            break;
+    	        }
+    	    }
+    	}
 
         String[] creds = obtenerCredencialesDesdeAuthorization(request);
         if (creds == null) {
@@ -48,7 +59,7 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        HttpSession session = request.getSession(false);
+        HttpSession session = request.getSession();
 
         try {
             String key = obtenerSessionKeyDesdeAPI(dni, password);
@@ -61,6 +72,7 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("dni", dni);
             session.setAttribute("password", password);
             session.setAttribute("key", key);
+            session.setAttribute("jsessionId", jsessionId);
             
 
             // Redirige según el rol

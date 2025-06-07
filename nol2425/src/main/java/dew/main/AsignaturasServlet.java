@@ -41,6 +41,18 @@ public class AsignaturasServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
         
+    	// Obtener JSESSIONID desde las cookies del navegador
+    	/*String jsessionId = null;
+    	jakarta.servlet.http.Cookie[] cookies = req.getCookies();
+    	if (cookies != null) {
+    	    for (jakarta.servlet.http.Cookie cookie : cookies) {
+    	        if ("JSESSIONID".equals(cookie.getName())) {
+    	            jsessionId = cookie.getValue();
+    	            break;
+    	        }
+    	    }
+    	}*/
+
         HttpSession session = req.getSession(false);
         if (session == null || session.getAttribute("key") == null) {
             resp.sendRedirect(req.getContextPath() + "/LoginServlet");
@@ -49,6 +61,7 @@ public class AsignaturasServlet extends HttpServlet {
         
         String key = (String) session.getAttribute("key");
         String dni = (String) session.getAttribute("dni");
+        String jsessionId = (String) session.getAttribute("jsessionId");
         
         try {
             // Obtener información del alumno
@@ -59,9 +72,11 @@ public class AsignaturasServlet extends HttpServlet {
             HttpRequest requestAlumnosInfo = HttpRequest.newBuilder()
                     .uri(URI.create(API_BASE_URL + "/alumnos/" + dni +"?key="+ key))
                     .header("Content-Type", "application/json")
+                    .header("Cookie", "JSESSIONID=" + jsessionId)
                     .GET()
                     .build();
-        	
+            System.out.println("Usando JSESSIONID: " + jsessionId);
+            System.out.println(requestAlumnosInfo);        	
             HttpResponse<String> alumnoResponse = client.send(requestAlumnosInfo, HttpResponse.BodyHandlers.ofString());
             System.out.println("Respuesta alumnos API: " + alumnoResponse.body());
 
@@ -79,6 +94,7 @@ public class AsignaturasServlet extends HttpServlet {
             HttpRequest requestAsignaturas = HttpRequest.newBuilder()
                     .uri(URI.create(API_BASE_URL + "/alumnos/" + dni + "/asignaturas?key=" + key))
                     .header("Content-Type", "application/json")
+                    .header("Cookie", "JSESSIONID=" + jsessionId)
                     .GET()
                     .build();
 
@@ -98,6 +114,7 @@ public class AsignaturasServlet extends HttpServlet {
                 HttpRequest requestDetalleAsig = HttpRequest.newBuilder()
                         .uri(URI.create(API_BASE_URL + "/asignaturas/" + acronimo + "?key=" + key))
                         .header("Content-Type", "application/json")
+                        .header("Cookie", "JSESSIONID=" + jsessionId)
                         .GET()
                         .build();
 
