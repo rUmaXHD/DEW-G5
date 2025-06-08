@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
-@WebServlet("/asignaturas")
+@WebServlet("/AsignaturasServlet")
 public class AsignaturasServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private Client client;

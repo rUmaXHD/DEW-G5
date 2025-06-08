@@ -71,7 +71,7 @@ public class LoginServlet extends HttpServlet {
 
 			// Redirige según el rol
 			if (request.isUserInRole("rolalu")) {
-				response.sendRedirect(request.getContextPath() + "/asignaturas");
+				response.sendRedirect(request.getContextPath() + "/AsignaturasServlet");
 			} else if (request.isUserInRole("rolpro")) {
 				response.sendRedirect(request.getContextPath() + "/profesor/inicio.jsp");
 			} else {
