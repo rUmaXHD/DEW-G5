@@ -15,8 +15,13 @@
 <body class="bg-light">
 
 <div class="container my-5">
-    <h1 class="mb-1">Bienvenido, <%= nombreAlumno %></h1>
-    <p class="text-muted"><strong>DNI:</strong> <%= dniAlumno %></p>
+    <!-- Tarjeta de bienvenida -->
+    <div class="card shadow-sm border-0 mb-4 bg-primary text-white">
+        <div class="card-body">
+            <h1 class="card-title">Bienvenid@, <%= nombreAlumno != null ? nombreAlumno : "Alumno" %></h1>
+            <p class="card-text"><strong>DNI:</strong> <%= dniAlumno != null ? dniAlumno : "Desconocido" %></p>
+        </div>
+    </div>
 
     <h2 class="mt-4 mb-3">Asignaturas</h2>
     <div id="contenedor-asignaturas" class="row gy-3"></div>
