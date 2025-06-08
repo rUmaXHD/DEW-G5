@@ -23,9 +23,12 @@
 
 <div class="container my-5">
 
-    <div class="mb-4">
-        <h1 class="mb-1">Bienvenido, <%= nombreAlumno != null ? nombreAlumno : "Alumno" %></h1>
-        <p class="text-muted"><strong>DNI:</strong> <%= dniAlumno != null ? dniAlumno : "Desconocido" %></p>
+    <!-- Tarjeta de bienvenida estilizada -->
+    <div class="card shadow-sm border-0 mb-4 bg-primary text-white">
+        <div class="card-body">
+            <h1 class="card-title">Bienvenid@, <%= nombreAlumno != null ? nombreAlumno : "Alumno" %></h1>
+            <p class="card-text"><strong>DNI:</strong> <%= dniAlumno != null ? dniAlumno : "Desconocido" %></p>
+        </div>
     </div>
 
     <h2 class="mb-3">Detalle de la asignatura</h2>
@@ -109,3 +112,4 @@
 
 </body>
 </html>
+
