@@ -1,68 +1,147 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.util.*" %>
 <%
-    List<Map<String, String>> asignaturas = (List<Map<String, String>>) request.getAttribute("asignaturas");
+    String asignaturasJson = (String) request.getAttribute("asignaturasData");
 %>
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Inicio Profesor</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>Asignaturas - Profesor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+        }
+        .asignatura {
+            border: 2px solid #007bff;
+            background: #f8f9ff;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+        }
+        .alumnos {
+            margin-top: 1rem;
+            padding-left: 2rem;
+        }
+        .alumno-card {
+            border: 1px solid #ccc;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #fff;
+        }
+        img.foto {
+            max-width: 80px;
+            margin-right: 1rem;
+            float: left;
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="#">Bienvenido Profesor</a>
-        </div>
-    </nav>
-    
-    <div class="container mt-4">
-        <h2>Mis Asignaturas</h2>
-        
-        <div id="asignaturas" class="mt-3">
-            <ul class="list-group" id="asignaturas-list"></ul>
-        </div>
-    </div>
-    
-    <a href="${pageContext.request.contextPath}/LogoutServlet">Cerrar sesión</a>
+    <h1>Asignaturas que impartes</h1>
+
+    <div id="asignaturas"></div>
+
+    <!-- ✅ JSON embebido -->
+    <script id="json-data" type="application/json">
+<%= asignaturasJson %>
+    </script>
 
     <script>
-        // Función para cargar las asignaturas via AJAX
-        function cargarAsignaturas() {
-            fetch('${pageContext.request.contextPath}/AsignaturasServlet')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Error en la respuesta del servidor');
-                    }
-                    return response.json();
-                })
+        const contenedor = document.getElementById("asignaturas");
+        const json = document.getElementById("json-data").textContent;
+        let asignaturas = [];
+
+        try {
+            asignaturas = JSON.parse(json);
+        } catch (e) {
+            console.error("Error al parsear asignaturas:", e);
+        }
+
+        if (!asignaturas || asignaturas.length === 0) {
+            contenedor.innerHTML = "<p>No tienes asignaturas asignadas.</p>";
+        } else {
+            asignaturas.forEach(asig => {
+                const div = document.createElement("div");
+                div.className = "asignatura";
+                div.innerHTML = `<h3>${asig.nombre} (${asig.acronimo})</h3>
+                    <p><strong>Curso:</strong> ${asig.curso} | <strong>Cuatrimestre:</strong> ${asig.cuatrimestre} | <strong>Créditos:</strong> ${asig.creditos}</p>
+                    <div class="alumnos" id="alumnos-${asig.acronimo}">Haz clic para ver alumnos</div>`;
+                div.addEventListener("click", () => cargarAlumnos(asig.acronimo));
+                contenedor.appendChild(div);
+            });
+        }
+
+        function cargarAlumnos(acronimo) {
+            const target = document.getElementById("alumnos-" + acronimo);
+            target.innerHTML = "Cargando alumnos...";
+
+            fetch(`profesor/ajax/alumnos?asignatura=${encodeURIComponent(acronimo)}`)
+                .then(r => r.json())
                 .then(data => {
-                    const ul = document.getElementById("asignaturas-list");
-                    ul.innerHTML = ''; // Limpiar lista antes de agregar elementos
-                    
-                    if (Array.isArray(data) && data.length > 0) {
-                        data.forEach(a => {
-                            const li = document.createElement("li");
-                            li.className = "list-group-item";
-                            li.textContent = a;
-                            ul.appendChild(li);
-                        });
-                    } else {
-                        const li = document.createElement("li");
-                        li.className = "list-group-item text-danger";
-                        li.textContent = "No estás matriculado en ninguna asignatura.";
-                        ul.appendChild(li);
+                    if (!data.length) {
+                        target.innerHTML = "<p>No hay alumnos inscritos.</p>";
+                        return;
                     }
+
+                    target.innerHTML = "";
+                    data.forEach(alumno => {
+                    	const card = document.createElement("div");
+                    	card.className = "alumno-card";
+
+                    	if (alumno.foto) {
+                    	    const img = document.createElement("img");
+                    	    img.className = "foto";
+                    	    img.src = alumno.foto;
+                    	    img.alt = "Foto";
+                    	    card.appendChild(img);
+                    	}
+
+                    	const nombre = `${alumno.nombre} ${alumno.apellidos}`;
+                    	const dni = alumno.dni;
+                    	const nota = alumno.nota || "";
+
+                    	const info = document.createElement("p");
+                    	info.innerHTML = `<strong>${nombre}</strong> (<em>${dni}</em>)`;
+                    	card.appendChild(info);
+
+                    	const label = document.createElement("label");
+                    	label.innerHTML = `Nota: <input type="number" min="0" max="10" step="0.1" id="nota-${dni}" value="${nota}">`;
+                    	card.appendChild(label);
+
+                    	const btn = document.createElement("button");
+                    	btn.textContent = "Guardar";
+                    	btn.onclick = () => guardarNota(dni, acronimo);
+                    	card.appendChild(btn);
+
+                    	target.appendChild(card);
+
+                    });
                 })
-                .catch(error => {
-                    console.error('Error:', error);
-                    const ul = document.getElementById("asignaturas-list");
-                    ul.innerHTML = '<li class="list-group-item text-danger">Error al cargar las asignaturas</li>';
+                .catch(err => {
+                    console.error(err);
+                    target.innerHTML = "<p>Error al cargar alumnos.</p>";
                 });
         }
 
-        // Llamar a la función cuando la página se cargue
-        document.addEventListener('DOMContentLoaded', cargarAsignaturas);
+        function guardarNota(dni, asignatura) {
+            const nota = document.getElementById("nota-" + dni).value;
+            fetch(`profesor/ajax/modificarNota?dniAlumno=${encodeURIComponent(dni)}&asignatura=${encodeURIComponent(asignatura)}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "text/plain"
+                },
+                body: nota
+            }).then(resp => {
+                if (resp.ok) {
+                    alert("Nota actualizada.");
+                } else {
+                    alert("Error al guardar nota.");
+                }
+            }).catch(e => {
+                console.error(e);
+                alert("Error al enviar petición.");
+            });
+        }
     </script>
 </body>
 </html>

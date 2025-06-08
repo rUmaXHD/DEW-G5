@@ -73,7 +73,7 @@ public class LoginServlet extends HttpServlet {
 			if (request.isUserInRole("rolalu")) {
 				response.sendRedirect(request.getContextPath() + "/AsignaturasServlet");
 			} else if (request.isUserInRole("rolpro")) {
-				response.sendRedirect(request.getContextPath() + "/profesor/inicio.jsp");
+				response.sendRedirect(request.getContextPath() + "/ProfesorAsignaturasServlet");
 			} else {
 				mostrarAlertaError(response, "Rol no reconocido");
 				session.invalidate();
