@@ -41,7 +41,7 @@
     <script>
         let asignaturas = [];
 
-        try {
+       try {
         	console.log("📦 JSON original crudo:");
         	console.log(document.getElementById("json-data").textContent);
         	const raw = document.getElementById("json-data").textContent;

@@ -198,7 +198,7 @@ public class AsignaturasServlet extends HttpServlet {
 		    req.setAttribute("dniAlumno", dni);
 		    req.setAttribute("nombreAlumno", alumnoData.get("nombre").getAsString() + " " + alumnoData.get("apellidos").getAsString());
 		    System.out.println("ASIGNATURAS INFO JSON FINAL: " + gson.toJson(asignaturasInfo));
-		    req.getRequestDispatcher("/alumno/asignaturas.jsp").forward(req, resp);
+		    req.getRequestDispatcher("/alumno/inicioalumno.jsp").forward(req, resp);
 
 		} catch (Exception e) {
 		    e.printStackTrace();

@@ -1,45 +1,58 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%
     String asignaturasJson = (String) request.getAttribute("asignaturasData");
+    String nombreProfesor = (String) request.getAttribute("nombreProfesor");
+    String dniProfesor = (String) request.getAttribute("dniProfesor");
 %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Asignaturas del Profesor</title>
+    <title>Inicio - Profesor</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 2rem;
         }
+
         .asignatura {
             border: 2px solid #007bff;
             background: #f4faff;
             padding: 1rem;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             cursor: pointer;
         }
+
         .alumnos {
             margin-top: 1rem;
             padding-left: 2rem;
         }
+
         .alumno-card {
             border: 1px solid #ccc;
             margin-bottom: 1rem;
             padding: 1rem;
             background: #fff;
         }
+
         img.foto {
             max-width: 80px;
             margin-right: 1rem;
             float: left;
             border-radius: 8px;
         }
+
+        button {
+            margin-top: 0.5rem;
+            padding: 0.5rem 1rem;
+        }
     </style>
 </head>
 <body>
-    <h1>Asignaturas que impartes</h1>
+    <h1>Profesor: <%= nombreProfesor != null ? nombreProfesor : "Desconocido" %></h1>
+    <p><strong>DNI:</strong> <%= dniProfesor != null ? dniProfesor : "N/A" %></p>
 
+    <h2>Asignaturas que imparte</h2>
     <div id="asignaturas"></div>
 
     <!-- JSON embebido -->
@@ -84,7 +97,6 @@
                         const card = document.createElement("div");
                         card.className = "alumno-card";
 
-                        // Foto (si existe)
                         if (alumno.foto) {
                             const img = document.createElement("img");
                             img.className = "foto";
@@ -93,7 +105,6 @@
                             card.appendChild(img);
                         }
 
-                        // Datos del alumno
                         const nombre = `${alumno.nombre} ${alumno.apellidos}`;
                         const dni = alumno.dni;
                         const nota = alumno.nota ?? "";
@@ -102,16 +113,29 @@
                         info.innerHTML = `<strong>${nombre}</strong> (<em>${dni}</em>)`;
                         card.appendChild(info);
 
-                        // Campo de nota
+                        const notaInput = document.createElement("input");
+                        notaInput.type = "number";
+                        notaInput.id = "nota-" + dni;
+                        notaInput.value = nota;
+                        notaInput.step = "0.1";
+                        notaInput.min = "0";
+                        notaInput.max = "10";
+
                         const notaLabel = document.createElement("label");
-                        notaLabel.innerHTML = `Nota: <input type="number" id="nota-${dni}" value="${nota}" step="0.1" min="0" max="10">`;
+                        notaLabel.innerHTML = `Nota: `;
+                        notaLabel.appendChild(notaInput);
                         card.appendChild(notaLabel);
 
-                        // Botón de guardar
                         const btn = document.createElement("button");
                         btn.textContent = "Guardar";
                         btn.onclick = () => guardarNota(dni, acronimo);
                         card.appendChild(btn);
+
+                        // Reactivar botón si cambia la nota
+                        notaInput.addEventListener("input", () => {
+                            btn.disabled = false;
+                            btn.textContent = "Guardar";
+                        });
 
                         target.appendChild(card);
                     });
@@ -123,7 +147,13 @@
         }
 
         function guardarNota(dni, acronimo) {
-            const nota = document.getElementById("nota-" + dni).value;
+            const input = document.getElementById("nota-" + dni);
+            const nota = input.value;
+            const btn = input.closest(".alumno-card").querySelector("button");
+
+            btn.disabled = true;
+            btn.textContent = "Guardando…";
+
             fetch("ajax/modificarNota?dniAlumno=" + encodeURIComponent(dni) + "&asignatura=" + encodeURIComponent(acronimo), {
                 method: "PUT",
                 headers: { "Content-Type": "text/plain" },
@@ -131,14 +161,20 @@
             })
             .then(resp => {
                 if (resp.ok) {
-                    alert("✅ Nota actualizada");
+                    btn.textContent = "Guardado";
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.textContent = "Guardar";
+                    }, 1000);
                 } else {
-                    alert("❌ Error al actualizar la nota");
+                    throw new Error("Error al actualizar la nota");
                 }
             })
             .catch(err => {
                 console.error("❌ Error en PUT:", err);
                 alert("❌ Error al guardar nota");
+                btn.disabled = false;
+                btn.textContent = "Guardar";
             });
         }
     </script>
