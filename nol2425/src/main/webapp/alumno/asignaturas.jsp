@@ -65,7 +65,7 @@
         	    // Título con nombre y código
         	    const h3 = document.createElement("h3");
         	    const txtNombre = document.createTextNode(asig.nombre || "(Sin nombre)");
-        	    const txtCodigo = document.createTextNode(` (${asig.codigo || "?"})`);
+        	    const txtCodigo = document.createTextNode(" (" + asig.codigo + ")" || " (" + "?" + ")");
         	    h3.appendChild(txtNombre);
         	    h3.appendChild(txtCodigo);
         	    div.appendChild(h3);
