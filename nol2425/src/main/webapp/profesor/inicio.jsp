@@ -1,7 +1,14 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<<<<<<< Updated upstream
 <%@ page import="java.util.*" %>
 <%
     List<Map<String, String>> asignaturas = (List<Map<String, String>>) request.getAttribute("asignaturas");
+=======
+<%@ page import="dew.main.structures.Asignatura" %>
+<%@ page import="java.util.List" %>
+<%
+	List<Asignatura> asignaturas = (List<Asignatura>) request.getAttribute("asignaturasData");	
+>>>>>>> Stashed changes
 %>
 <!DOCTYPE html>
 <html>
@@ -10,6 +17,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+<<<<<<< Updated upstream
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="#">Bienvenido Profesor</a>
@@ -33,5 +41,118 @@
             <% } %>
         </div>
     </div>
+=======
+    <h1>Asignaturas que impartes</h1>
+
+    <ul id="asignaturas">
+    	   <% for (Asignatura a : asignaturas) { %>
+    	   <li>
+    	   	<%= a.getAcronimo() %>
+    	   	<a href="/nol2425/profesor/listaAlumnos?asig=<%= a.getAcronimo() %>">Acceder</a>
+    	   	</li>
+    	   <% } %>
+    </ul>
+
+    <!-- JSON embebido -->
+<!--     <script id="json-data" type="application/json">
+
+    </script>
+
+    <script>
+        const asignaturas = JSON.parse(document.getElementById("json-data").textContent || "[]");
+        const contenedor = document.getElementById("asignaturas");
+
+        if (!asignaturas.length) {
+            contenedor.innerHTML = "<p>No tienes asignaturas asignadas.</p>";
+        } else {
+            asignaturas.forEach(asig => {
+                const div = document.createElement("div");
+                div.className = "asignatura";
+                div.innerHTML = `
+                    <h3>${asig.nombre} (${asig.acronimo})</h3>
+                    <p><strong>Curso:</strong> ${asig.curso} | <strong>Cuatrimestre:</strong> ${asig.cuatrimestre} | <strong>Créditos:</strong> ${asig.creditos}</p>
+                    <div class="alumnos" id="alumnos-${asig.acronimo.replaceAll(' ', '_')}">Haz clic para ver alumnos</div>
+                `;
+                div.addEventListener("click", () => cargarAlumnos(asig.acronimo));
+                contenedor.appendChild(div);
+            });
+        }
+
+        function cargarAlumnos(acronimo) {
+            const target = document.getElementById("alumnos-" + acronimo.replaceAll(' ', '_'));
+            target.innerHTML = "Cargando alumnos...";
+
+            fetch("ajax/alumnos?asignatura=" + encodeURIComponent(acronimo))
+                .then(resp => resp.json())
+                .then(alumnos => {
+                    if (!alumnos.length) {
+                        target.innerHTML = "<p>No hay alumnos inscritos.</p>";
+                        return;
+                    }
+
+                    target.innerHTML = "";
+                    alumnos.forEach(alumno => {
+                        const card = document.createElement("div");
+                        card.className = "alumno-card";
+
+                        // Foto (si existe)
+                        if (alumno.foto) {
+                            const img = document.createElement("img");
+                            img.className = "foto";
+                            img.src = alumno.foto;
+                            img.alt = "Foto de " + alumno.nombre;
+                            card.appendChild(img);
+                        }
+
+                        // Datos del alumno
+                        const nombre = `${alumno.nombre} ${alumno.apellidos}`;
+                        const dni = alumno.dni;
+                        const nota = alumno.nota ?? "";
+
+                        const info = document.createElement("p");
+                        info.innerHTML = `<strong>${nombre}</strong> (<em>${dni}</em>)`;
+                        card.appendChild(info);
+
+                        // Campo de nota
+                        const notaLabel = document.createElement("label");
+                        notaLabel.innerHTML = `Nota: <input type="number" id="nota-${dni}" value="${nota}" step="0.1" min="0" max="10">`;
+                        card.appendChild(notaLabel);
+
+                        // Botón de guardar
+                        const btn = document.createElement("button");
+                        btn.textContent = "Guardar";
+                        btn.onclick = () => guardarNota(dni, acronimo);
+                        card.appendChild(btn);
+
+                        target.appendChild(card);
+                    });
+                })
+                .catch(err => {
+                    console.error("❌ Error al cargar alumnos:", err);
+                    target.innerHTML = "<p>Error al cargar alumnos.</p>";
+                });
+        }
+
+        function guardarNota(dni, acronimo) {
+            const nota = document.getElementById("nota-" + dni).value;
+            fetch("ajax/modificarNota?dniAlumno=" + encodeURIComponent(dni) + "&asignatura=" + encodeURIComponent(acronimo), {
+                method: "PUT",
+                headers: { "Content-Type": "text/plain" },
+                body: nota
+            })
+            .then(resp => {
+                if (resp.ok) {
+                    alert("✅ Nota actualizada");
+                } else {
+                    alert("❌ Error al actualizar la nota");
+                }
+            })
+            .catch(err => {
+                console.error("❌ Error en PUT:", err);
+                alert("❌ Error al guardar nota");
+            });
+        }
+    </script>-->
+>>>>>>> Stashed changes
 </body>
 </html>

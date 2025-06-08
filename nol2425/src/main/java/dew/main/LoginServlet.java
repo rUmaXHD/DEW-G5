@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
 
+<<<<<<< Updated upstream
     private static final long serialVersionUID = 1L;
     private static final String API_URL = "http://localhost:9090/CentroEducativo/login";
     
@@ -122,5 +123,132 @@ public class LoginServlet extends HttpServlet {
             + "</script></head><body></body></html>"
         );
     }
+=======
+	private static final long serialVersionUID = 1L;
+	private static final String API_URL = "http://localhost:9090/CentroEducativo/login";
+
+	@Override
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		procesarPostLogin(request, response);
+	}
+
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		procesarPostLogin(request, response);
+	}
+
+	private void procesarPostLogin(HttpServletRequest request, HttpServletResponse response)
+			throws IOException, ServletException {
+		// Obtener JSESSIONID desde las cookies del navegador
+		String jsessionId = null;
+		jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+		if (cookies != null) {
+			for (jakarta.servlet.http.Cookie cookie : cookies) {
+				if ("JSESSIONID".equals(cookie.getName())) {
+					jsessionId = cookie.getValue();
+					break;
+				}
+			}
+		}
+
+		String[] creds = obtenerCredencialesDesdeAuthorization(request);
+		if (creds == null) {
+			mostrarAlertaError(response, "No se pudieron obtener las credenciales.");
+			return;
+		}
+
+		String dni = creds[0];
+		String password = creds[1];
+
+		if (dni == null || dni.isBlank()) {
+			mostrarAlertaError(response, "Sesión no iniciada");
+			return;
+		}
+
+		HttpSession session = request.getSession();
+
+		try {
+			boolean ok = obtenerSessionKeyDesdeAPI(dni, password, session);
+			if (!ok) {
+				mostrarAlertaError(response, "Credenciales inválidas en CentroEducativo");
+				session.invalidate();
+				return;
+			}
+
+			// Redirige según el rol
+			if (request.isUserInRole("rolalu")) {
+				response.sendRedirect(request.getContextPath() + "/ListaAsignaturasAlumnoServlet");
+			} else if (request.isUserInRole("rolpro")) {
+				response.sendRedirect(request.getContextPath() + "/profesor/inicio");
+			} else {
+				mostrarAlertaError(response, "Rol no reconocido");
+				session.invalidate();
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			mostrarAlertaError(response, "Error al conectar con CentroEducativo");
+		}
+	}
+
+	private String[] obtenerCredencialesDesdeAuthorization(HttpServletRequest request) {
+		String authHeader = request.getHeader("Authorization");
+
+		if (authHeader != null && authHeader.startsWith("Basic ")) {
+			String base64Credentials = authHeader.substring("Basic ".length());
+			byte[] credDecoded = java.util.Base64.getDecoder().decode(base64Credentials);
+			String credentials = new String(credDecoded);
+			return credentials.split(":", 2);
+		}
+		return null;
+	}
+
+	private boolean obtenerSessionKeyDesdeAPI(String dni, String password, HttpSession session) throws Exception {
+		String json = String.format("{\"dni\":\"%s\", \"password\":\"%s\"}", dni, password);
+
+		HttpClient client = HttpClient.newHttpClient();
+
+		HttpRequest request = HttpRequest.newBuilder().uri(URI.create(API_URL))
+				.header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(json)).build();
+
+		HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+		System.out.println("Respuesta login API: " + response.body());
+
+		if (response.statusCode() == 200) {
+			String key = response.body();
+			String setCookie = response.headers().firstValue("Set-Cookie").get();
+			
+			String jsessionid = null;
+			for(String cookie : setCookie.split(";")) {
+				String[] parts = cookie.trim().split("=");
+				String cookieName = parts[0];
+				String cookieValue = parts[1];
+				
+				if("JSESSIONID".equals(cookieName)) {
+					jsessionid = cookieValue;
+					break;
+				}
+			}
+			if(jsessionid == null)
+				return false;
+					
+			session.setAttribute("dni", dni);
+			session.setAttribute("password", password);
+			session.setAttribute("key", key);
+			session.setAttribute("jsessionId", jsessionid);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	private void mostrarAlertaError(HttpServletResponse response, String mensaje) throws IOException {
+		response.setContentType("text/html;charset=UTF-8");
+		response.getWriter().write("<html><head><script type='text/javascript'>" + "alert('"
+				+ mensaje.replace("'", "\\'") + "');" + "history.back();" + "</script></head><body></body></html>");
+	}
+>>>>>>> Stashed changes
 }
 
