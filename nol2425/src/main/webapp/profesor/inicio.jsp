@@ -1,63 +1,61 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<<<<<<< Updated upstream
+<%@ page import="java.util.*" %>
 <%
-    String asignaturasJson = (String) request.getAttribute("asignaturasData");
-    String nombreProfesor = (String) request.getAttribute("nombreProfesor");
-    String dniProfesor = (String) request.getAttribute("dniProfesor");
+    List<Map<String, String>> asignaturas = (List<Map<String, String>>) request.getAttribute("asignaturas");
+=======
+<%@ page import="dew.main.structures.Asignatura" %>
+<%@ page import="java.util.List" %>
+<%
+	List<Asignatura> asignaturas = (List<Asignatura>) request.getAttribute("asignaturasData");	
+>>>>>>> Stashed changes
 %>
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Inicio - Profesor</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 2rem;
-        }
-
-        .asignatura {
-            border: 2px solid #007bff;
-            background: #f4faff;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            cursor: pointer;
-        }
-
-        .alumnos {
-            margin-top: 1rem;
-            padding-left: 2rem;
-        }
-
-        .alumno-card {
-            border: 1px solid #ccc;
-            margin-bottom: 1rem;
-            padding: 1rem;
-            background: #fff;
-        }
-
-        img.foto {
-            max-width: 80px;
-            margin-right: 1rem;
-            float: left;
-            border-radius: 8px;
-        }
-
-        button {
-            margin-top: 0.5rem;
-            padding: 0.5rem 1rem;
-        }
-    </style>
+    <title>Inicio Profesor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <h1>Profesor: <%= nombreProfesor != null ? nombreProfesor : "Desconocido" %></h1>
-    <p><strong>DNI:</strong> <%= dniProfesor != null ? dniProfesor : "N/A" %></p>
+<<<<<<< Updated upstream
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">Bienvenido Profesor</a>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        <h2>Asignaturas que impartes</h2>
+        <div id="asignaturas" class="mt-3">
+            <% if (asignaturas != null && !asignaturas.isEmpty()) {
+                   for (Map<String, String> a : asignaturas) { %>
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <a href="listaAlumnos?asig=<%= a.get("acronimo") %>" class="text-decoration-none">
+                            <%= a.get("nombre") %> (<%= a.get("acronimo") %>)
+                        </a>
+                    </div>
+                </div>
+            <% } } else { %>
+                <div class="alert alert-warning">No se han encontrado asignaturas.</div>
+            <% } %>
+        </div>
+    </div>
+=======
+    <h1>Asignaturas que impartes</h1>
 
-    <h2>Asignaturas que imparte</h2>
-    <div id="asignaturas"></div>
+    <ul id="asignaturas">
+    	   <% for (Asignatura a : asignaturas) { %>
+    	   <li>
+    	   	<%= a.getAcronimo() %>
+    	   	<a href="/nol2425/profesor/listaAlumnos?asig=<%= a.getAcronimo() %>">Acceder</a>
+    	   	</li>
+    	   <% } %>
+    </ul>
 
     <!-- JSON embebido -->
-    <script id="json-data" type="application/json">
-<%= asignaturasJson %>
+<!--     <script id="json-data" type="application/json">
+
     </script>
 
     <script>
@@ -97,6 +95,7 @@
                         const card = document.createElement("div");
                         card.className = "alumno-card";
 
+                        // Foto (si existe)
                         if (alumno.foto) {
                             const img = document.createElement("img");
                             img.className = "foto";
@@ -105,6 +104,7 @@
                             card.appendChild(img);
                         }
 
+                        // Datos del alumno
                         const nombre = `${alumno.nombre} ${alumno.apellidos}`;
                         const dni = alumno.dni;
                         const nota = alumno.nota ?? "";
@@ -113,29 +113,16 @@
                         info.innerHTML = `<strong>${nombre}</strong> (<em>${dni}</em>)`;
                         card.appendChild(info);
 
-                        const notaInput = document.createElement("input");
-                        notaInput.type = "number";
-                        notaInput.id = "nota-" + dni;
-                        notaInput.value = nota;
-                        notaInput.step = "0.1";
-                        notaInput.min = "0";
-                        notaInput.max = "10";
-
+                        // Campo de nota
                         const notaLabel = document.createElement("label");
-                        notaLabel.innerHTML = `Nota: `;
-                        notaLabel.appendChild(notaInput);
+                        notaLabel.innerHTML = `Nota: <input type="number" id="nota-${dni}" value="${nota}" step="0.1" min="0" max="10">`;
                         card.appendChild(notaLabel);
 
+                        // Botón de guardar
                         const btn = document.createElement("button");
                         btn.textContent = "Guardar";
                         btn.onclick = () => guardarNota(dni, acronimo);
                         card.appendChild(btn);
-
-                        // Reactivar botón si cambia la nota
-                        notaInput.addEventListener("input", () => {
-                            btn.disabled = false;
-                            btn.textContent = "Guardar";
-                        });
 
                         target.appendChild(card);
                     });
@@ -147,13 +134,7 @@
         }
 
         function guardarNota(dni, acronimo) {
-            const input = document.getElementById("nota-" + dni);
-            const nota = input.value;
-            const btn = input.closest(".alumno-card").querySelector("button");
-
-            btn.disabled = true;
-            btn.textContent = "Guardando…";
-
+            const nota = document.getElementById("nota-" + dni).value;
             fetch("ajax/modificarNota?dniAlumno=" + encodeURIComponent(dni) + "&asignatura=" + encodeURIComponent(acronimo), {
                 method: "PUT",
                 headers: { "Content-Type": "text/plain" },
@@ -161,23 +142,17 @@
             })
             .then(resp => {
                 if (resp.ok) {
-                    btn.textContent = "Guardado";
-                    setTimeout(() => {
-                        btn.disabled = false;
-                        btn.textContent = "Guardar";
-                    }, 1000);
+                    alert("✅ Nota actualizada");
                 } else {
-                    throw new Error("Error al actualizar la nota");
+                    alert("❌ Error al actualizar la nota");
                 }
             })
             .catch(err => {
                 console.error("❌ Error en PUT:", err);
                 alert("❌ Error al guardar nota");
-                btn.disabled = false;
-                btn.textContent = "Guardar";
             });
         }
-    </script>
+    </script>-->
+>>>>>>> Stashed changes
 </body>
 </html>
-

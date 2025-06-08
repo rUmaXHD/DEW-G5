@@ -1,9 +1,11 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
-<%@ page import="dew.main.ListaAlumnosAsignaturaServlet.Alumno" %>
+<%@ page import="dew.main.structures.NotaAlumno" %>
+<%@ page import="dew.main.structures.Alumno" %>
 <%
     String asig = (String) request.getAttribute("asig");
-    List<Alumno> alumnos = (List<Alumno>) request.getAttribute("alumnos");
+	List<NotaAlumno> notaAlumnos = (List<NotaAlumno>) request.getAttribute("notaAlumnos");
+	List<Alumno> alumnos = (List<Alumno>) request.getAttribute("alumnos");
 %>
 <!DOCTYPE html>
 <html>
@@ -14,10 +16,14 @@
 <body class="p-4">
     <h2>Alumnos matriculados en <%= asig %></h2>
     <ul class="list-group">
-        <% for (Alumno a : alumnos) { %>
+        <% 
+        for (int i = 0; i < notaAlumnos.size(); i++) {
+        	NotaAlumno na = notaAlumnos.get(i);
+        	Alumno a = alumnos.get(i);
+        %>
             <li class="list-group-item">
-                <a href="verAlumno?asig=<%= asig %>&dni=<%= a.dni %>">
-                    <%= a.apellidos %>, <%= a.nombre %> (<%= a.dni %>)
+                <a href="verAlumno?asig=<%= asig %>&dni=<%= na.getAlumno() %>">
+                    <%= a.getApellidos() %>, <%= a.getNombre() %> (<%= a.getDni() %>) [<%= na.getNota() %>]
                 </a>
             </li>
         <% } %>
