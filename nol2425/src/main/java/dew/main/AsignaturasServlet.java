@@ -197,8 +197,7 @@ public class AsignaturasServlet extends HttpServlet {
 		    req.setAttribute("asignaturasData", gson.toJson(asignaturasInfo));
 		    req.setAttribute("dniAlumno", dni);
 		    req.setAttribute("nombreAlumno", alumnoData.get("nombre").getAsString() + " " + alumnoData.get("apellidos").getAsString());
-		    System.out.println("👀 ASIGNATURAS INFO JSON FINAL: " + gson.toJson(asignaturasInfo));
-		    System.out.println("✅ JSP path: /alumno/asignaturas.jsp");
+		    System.out.println("ASIGNATURAS INFO JSON FINAL: " + gson.toJson(asignaturasInfo));
 		    req.getRequestDispatcher("/alumno/asignaturas.jsp").forward(req, resp);
 
 		} catch (Exception e) {
