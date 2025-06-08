@@ -5,13 +5,12 @@
          version="5.0">
 	  <!-- Página de inicio -->
 	<welcome-file-list>
-	    <welcome-file>LoginServlet</welcome-file>
+	    <welcome-file>index.jsp</welcome-file>
 	</welcome-file-list>
     <!-- Recurso protegido -->
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>ZonaSegura</web-resource-name>
-            <url-pattern>/*</url-pattern>
             <url-pattern>/alumno/*</url-pattern>
             <url-pattern>/profesor/*</url-pattern>
 			<url-pattern>/LoginServlet</url-pattern> 
