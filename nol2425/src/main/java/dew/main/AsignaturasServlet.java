@@ -176,7 +176,7 @@ public class AsignaturasServlet extends HttpServlet {
 			req.setAttribute("nombreAlumno",
 					alumnoData.get("nombre").getAsString() + " " + alumnoData.get("apellidos").getAsString());
 
-			req.getRequestDispatcher("inicio.jsp").forward(req, resp);
+			req.getRequestDispatcher("/alumno/asignaturas.jsp").forward(req, resp);
 
 		} catch (Exception e) {
 			e.printStackTrace();
