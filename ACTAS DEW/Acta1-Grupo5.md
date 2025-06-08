@@ -9,7 +9,6 @@
 | Saúl Rabadán Sandoval      | Miembro    | [srabsan@teleco.upv.es](mailto:srabsan@teleco.upv.es)   |
 | Bogdan-Nicolae Ionascu     | Miembro    | [bionasc@etsinf.upv.es](mailto:bionasc@etsinf.upv.es)   |
 | Andrés Durá Hernández      | Secretario | [adurher@etsinf.upv.es](mailto:adurher@etsinf.upv.es)   |
-| Adrián García González     | Miembro    | [agargon2@etsinf.upv.es](mailto:agargon2@etsinf.upv.es) |
 | Miguel Ángel Ortiz Requena | Miembro    | [maortreq@etsinf.upv.es](mailto:maortreq@etsinf.upv.es) |
 
 ### Objetivo
