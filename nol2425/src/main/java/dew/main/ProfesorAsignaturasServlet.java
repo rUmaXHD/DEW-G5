@@ -43,7 +43,7 @@ public class ProfesorAsignaturasServlet extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/LoginServlet");
             return;
         }
-
+        System.out.println("✅ Iniciando consulta de asignaturas del profesor:");
         String dni = (String) session.getAttribute("dni");
         String key = (String) session.getAttribute("key");
         String jsessionId = (String) session.getAttribute("jsessionId");
@@ -58,12 +58,14 @@ public class ProfesorAsignaturasServlet extends HttpServlet {
                 .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println(response.body());
 
             if (response.statusCode() != 200) {
                 throw new ServletException("Error al obtener asignaturas del profesor");
             }
 
             req.setAttribute("asignaturasData", response.body());
+            
             req.getRequestDispatcher("/profesor/inicio.jsp").forward(req, resp);
 
         } catch (Exception e) {
