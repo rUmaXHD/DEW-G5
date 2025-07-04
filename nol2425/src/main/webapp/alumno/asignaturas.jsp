@@ -4,49 +4,39 @@
     String nombreAlumno = (String) request.getAttribute("nombreAlumno");
     String dniAlumno = (String) request.getAttribute("dniAlumno");
 %>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Inicio - Alumno</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 2rem;
-        }
-        .asignatura {
-            border: 2px solid red;
-            background: #fffff0;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-        ul {
-            padding-left: 1.5rem;
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <h1>Bienvenido, <%= nombreAlumno != null ? nombreAlumno : "Alumno" %></h1>
-    <p><strong>DNI:</strong> <%= dniAlumno != null ? dniAlumno : "Desconocido" %></p>
+<body class="bg-light">
 
-    <h2>Asignaturas</h2>
-    <div id="asignaturas"></div>
+    <!-- Cabecera azul -->
+    <div class="bg-primary text-white py-5 mb-4">
+        <div class="container text-center">
+            <h1 class="display-6">Bienvenid@, <%= nombreAlumno != null ? nombreAlumno : "Alumno" %></h1>
+            <p class="mb-0"><strong>DNI:</strong> <%= dniAlumno != null ? dniAlumno : "Desconocido" %></p>
+        </div>
+    </div>
 
-    <!-- ✅ JSON seguro embebido como texto -->
+    <div class="container">
+        <h2 class="text-secondary mb-4">Asignaturas matriculadas</h2>
+        <div id="asignaturas" class="row gy-4"></div>
+    </div>
+
+    <!-- JSON seguro embebido -->
     <script id="json-data" type="application/json">
 <%= asignaturasJson %>
     </script>
 
+    <!-- Script para generar tarjetas -->
     <script>
         let asignaturas = [];
-
-       try {
-        	console.log("📦 JSON original crudo:");
-        	console.log(document.getElementById("json-data").textContent);
-        	const raw = document.getElementById("json-data").textContent;
+        try {
+            const raw = document.getElementById("json-data").textContent;
             asignaturas = JSON.parse(raw);
-            console.log("✅ JSON parseado correctamente:", asignaturas);
         } catch (e) {
             console.error("❌ Error al parsear el JSON:", e);
         }
@@ -57,65 +47,61 @@
         if (!asignaturas || asignaturas.length === 0) {
             contenedor.innerHTML = "<p>No estás inscrito en ninguna asignatura.</p>";
         } else {
-        	asignaturas.forEach(asig => {
-        		console.log("🔍 Nombre:", asig.nombre, " | Código:", asig.codigo, " | typeof:", typeof asig.codigo);
-        	    const div = document.createElement("div");
-        	    div.className = "asignatura";
+            asignaturas.forEach(asig => {
+                const col = document.createElement("div");
+                col.className = "col-md-6 col-lg-4";
 
-        	    // Título con nombre y código
-        	    const h3 = document.createElement("h3");
-        	    const txtNombre = document.createTextNode(asig.nombre || "(Sin nombre)");
-        	    const txtCodigo = document.createTextNode(" (" + asig.codigo + ")" || " (" + "?" + ")");
-        	    h3.appendChild(txtNombre);
-        	    h3.appendChild(txtCodigo);
-        	    div.appendChild(h3);
+                const card = document.createElement("div");
+                card.className = "card shadow-sm h-100";
 
-        	    // Función auxiliar para crear <p><strong>Etiqueta:</strong> valor</p>
-        	    function creaParrafo(etiqueta, valor) {
-        	        const p = document.createElement("p");
-        	        const strong = document.createElement("strong");
-        	        strong.textContent = etiqueta;
-        	        p.appendChild(strong);
-        	        p.appendChild(document.createTextNode(" " + valor));
-        	        return p;
-        	    }
+                const body = document.createElement("div");
+                body.className = "card-body";
 
-        	    // Curso, Cuatrimestre, Créditos, Grupo
-        	    div.appendChild(creaParrafo("Curso:", asig.curso ?? "?"));
-        	    div.appendChild(creaParrafo("Cuatrimestre:", asig.cuatrimestre ?? "?"));
-        	    div.appendChild(creaParrafo("Créditos:", asig.creditos ?? "?"));
-        	    div.appendChild(creaParrafo("Grupo:", asig.grupoNombre ?? "Sin grupo asignado"));
+                const title = document.createElement("h5");
+                title.className = "card-title";
+                title.textContent = `${asig.nombre || "(Sin nombre)"} (${asig.codigo || "?"})`;
+                body.appendChild(title);
 
-        	    // Miembros
-        	    const pMiembros = document.createElement("p");
-        	    const strongMiembros = document.createElement("strong");
-        	    strongMiembros.textContent = "Miembros:";
-        	    pMiembros.appendChild(strongMiembros);
-        	    div.appendChild(pMiembros);
+                const info = [
+                    ["Curso", asig.curso ?? "?"],
+                    ["Cuatrimestre", asig.cuatrimestre ?? "?"],
+                    ["Créditos", asig.creditos ?? "?"],
+                    ["Grupo", asig.grupoNombre ?? "Sin grupo asignado"]
+                ];
 
-        	    const miembrosContainer = document.createElement("div");
-        	    if (asig.miembros && asig.miembros.length > 0) {
-        	        const ul = document.createElement("ul");
-        	        asig.miembros.forEach(m => {
-        	            const li = document.createElement("li");
-        	            li.textContent = m;
-        	            ul.appendChild(li);
-        	        });
-        	        miembrosContainer.appendChild(ul);
-        	    } else {
-        	        const p = document.createElement("p");
-        	        p.style.fontStyle = "italic";
-        	        p.textContent = "Sin compañeros asignados.";
-        	        miembrosContainer.appendChild(p);
-        	    }
+                info.forEach(([label, value]) => {
+                    const p = document.createElement("p");
+                    p.innerHTML = `<strong>${label}:</strong> ${value}`;
+                    body.appendChild(p);
+                });
 
-        	    div.appendChild(miembrosContainer);
-        	    contenedor.appendChild(div);
-        	});
+                const miembrosSection = document.createElement("div");
+                const miembrosTitle = document.createElement("p");
+                miembrosTitle.innerHTML = "<strong>Miembros:</strong>";
+                miembrosSection.appendChild(miembrosTitle);
 
+                if (asig.miembros && asig.miembros.length > 0) {
+                    const ul = document.createElement("ul");
+                    asig.miembros.forEach(m => {
+                        const li = document.createElement("li");
+                        li.textContent = m;
+                        ul.appendChild(li);
+                    });
+                    miembrosSection.appendChild(ul);
+                } else {
+                    const p = document.createElement("p");
+                    p.className = "fst-italic";
+                    p.textContent = "Sin compañeros asignados.";
+                    miembrosSection.appendChild(p);
+                }
+
+                body.appendChild(miembrosSection);
+                card.appendChild(body);
+                col.appendChild(card);
+                contenedor.appendChild(col);
+            });
         }
     </script>
+
 </body>
 </html>
-
-

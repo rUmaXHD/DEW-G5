@@ -9,62 +9,64 @@
 <head>
     <meta charset="UTF-8">
     <title>Asignaturas del alumno</title>
-    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 
-<div class="container my-5">
-    <!-- Tarjeta de bienvenida -->
-    <div class="card shadow-sm border-0 mb-4 bg-primary text-white">
-        <div class="card-body">
-            <h1 class="card-title">Bienvenid@, <%= nombreAlumno != null ? nombreAlumno : "Alumno" %></h1>
-            <p class="card-text"><strong>DNI:</strong> <%= dniAlumno != null ? dniAlumno : "Desconocido" %></p>
+    <!-- Cabecera -->
+    <div class="bg-primary text-white py-5 mb-4">
+        <div class="container text-center">
+            <h1 class="display-6">Bienvenid@, <%= nombreAlumno != null ? nombreAlumno : "Alumno" %></h1>
+            <p class="mb-0"><strong>DNI:</strong> <%= dniAlumno != null ? dniAlumno : "Desconocido" %></p>
         </div>
     </div>
 
-    <h2 class="mt-4 mb-3">Asignaturas</h2>
-    <div id="contenedor-asignaturas" class="row gy-3"></div>
-</div>
+    <div class="container">
+        <h2 class="text-secondary mb-4">Tus asignaturas</h2>
+        <div id="contenedor-asignaturas" class="row gy-4"></div>
+    </div>
 
-<!-- TU JS FUNCIONAL, con Bootstrap aplicado -->
-<script>
-    const asignaturas = <%= asignaturasJson %>;
-    const contenedor = document.getElementById("contenedor-asignaturas");
+    <!-- Script  -->
+    <script>
+        const asignaturas = <%= asignaturasJson %>;
+        const contenedor = document.getElementById("contenedor-asignaturas");
 
-    asignaturas.forEach(asig => {
-        const col = document.createElement("div");
-        col.className = "col-md-6 col-lg-4";
+        asignaturas.forEach(asig => {
+            const col = document.createElement("div");
+            col.className = "col-md-6 col-lg-4";
 
-        const div = document.createElement("div");
-        div.className = "card h-100 shadow-sm";
+            const div = document.createElement("div");
+            div.className = "card h-100 shadow-sm border-0";
 
-        const body = document.createElement("div");
-        body.className = "card-body d-flex flex-column justify-content-center align-items-center text-center h-100";
+            const body = document.createElement("div");
+            body.className = "card-body d-flex flex-column justify-content-center align-items-center text-center";
 
-        const nombre = asig.nombre || "(Sin nombre)";
-        const codigo = asig.codigo || "?";
+            const nombre = asig.nombre || "(Sin nombre)";
+            const codigo = asig.codigo || "?";
 
-        const title = document.createElement("h5");
-        title.className = "card-title mb-3";
-        title.textContent = nombre + " (" + codigo + ")";
+            const title = document.createElement("h5");
+            title.className = "card-title mb-2 fw-bold";
+            title.textContent = nombre;
 
+            const code = document.createElement("p");
+            code.className = "text-muted mb-3";
+            code.textContent = "Código: " + codigo;
 
-        const boton = document.createElement("a");
-        boton.href = "DetalleAsignaturaServlet?codigo=" + encodeURIComponent(codigo);
-        boton.className = "btn btn-outline-primary mt-3";
-        boton.textContent = "Ver detalles";
+            const boton = document.createElement("a");
+            boton.href = "DetalleAsignaturaServlet?codigo=" + encodeURIComponent(codigo);
+            boton.className = "btn btn-outline-primary mt-auto";
+            boton.textContent = "Ver detalles";
 
-        body.appendChild(title);
-        body.appendChild(boton);
-        div.appendChild(body);
-        col.appendChild(div);
-        contenedor.appendChild(col);
-    });
-</script>
+            body.appendChild(title);
+            body.appendChild(code);
+            body.appendChild(boton);
+            div.appendChild(body);
+            col.appendChild(div);
+            contenedor.appendChild(col);
+        });
+    </script>
 
 </body>
 </html>
-
 
 

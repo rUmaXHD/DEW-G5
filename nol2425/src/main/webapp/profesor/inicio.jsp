@@ -2,125 +2,48 @@
 <%@ page import="dew.main.structures.Asignatura" %>
 <%@ page import="java.util.List" %>
 <%
-	List<Asignatura> asignaturas = (List<Asignatura>) request.getAttribute("asignaturasData");	
+    List<Asignatura> asignaturas = (List<Asignatura>) request.getAttribute("asignaturasData");	
 %>
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
+    <meta charset="UTF-8">
     <title>Inicio Profesor</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <h1>Asignaturas que impartes</h1>
+<body class="bg-light">
 
-    <ul id="asignaturas">
-    	   <% for (Asignatura a : asignaturas) { %>
-    	   <li>
-    	   	<%= a.getAcronimo() %>
-    	   	<a href="/nol2425/profesor/listaAlumnos?asig=<%= a.getAcronimo() %>">Acceder</a>
-    	   	</li>
-    	   <% } %>
-    </ul>
+    <!-- Cabecera azul -->
+    <div class="bg-primary text-white py-5 mb-4">
+        <div class="container text-center">
+            <h1 class="display-6">Asignaturas que impartes</h1>
+            <p class="mb-0">Selecciona una asignatura para ver y gestionar calificaciones</p>
+        </div>
+    </div>
 
-    <!-- JSON embebido -->
-<!--     <script id="json-data" type="application/json">
+    <div class="container">
+        <div class="row gy-4">
+            <% for (Asignatura a : asignaturas) { %>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <h5 class="card-title"><%= a.getNombre() %></h5>
+                            <p class="card-text mb-1"><strong>Acrónimo:</strong> <%= a.getAcronimo() %></p>
+                            <p class="card-text mb-1"><strong>Curso:</strong> <%= a.getCurso() %>º</p>
+                            <p class="card-text mb-1"><strong>Cuatrimestre:</strong> <%= a.getCuatrimestre() %></p>
+                            <p class="card-text"><strong>Créditos:</strong> <%= a.getCreditos() %></p>
+                            <a href="<%= request.getContextPath() %>/profesor/listaAlumnos?asig=<%= a.getAcronimo() %>" 
+                               class="btn btn-outline-primary mt-3">Acceder</a>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+    </div>
+    <div class="container">
+		<a href="<%= request.getContextPath() %>/LogoutServlet" class="btn btn-danger">Cerrar sesión</a>
 
-    </script>
+    </div>
 
-    <script>
-        const asignaturas = JSON.parse(document.getElementById("json-data").textContent || "[]");
-        const contenedor = document.getElementById("asignaturas");
-
-        if (!asignaturas.length) {
-            contenedor.innerHTML = "<p>No tienes asignaturas asignadas.</p>";
-        } else {
-            asignaturas.forEach(asig => {
-                const div = document.createElement("div");
-                div.className = "asignatura";
-                div.innerHTML = `
-                    <h3>${asig.nombre} (${asig.acronimo})</h3>
-                    <p><strong>Curso:</strong> ${asig.curso} | <strong>Cuatrimestre:</strong> ${asig.cuatrimestre} | <strong>Créditos:</strong> ${asig.creditos}</p>
-                    <div class="alumnos" id="alumnos-${asig.acronimo.replaceAll(' ', '_')}">Haz clic para ver alumnos</div>
-                `;
-                div.addEventListener("click", () => cargarAlumnos(asig.acronimo));
-                contenedor.appendChild(div);
-            });
-        }
-
-        function cargarAlumnos(acronimo) {
-            const target = document.getElementById("alumnos-" + acronimo.replaceAll(' ', '_'));
-            target.innerHTML = "Cargando alumnos...";
-
-            fetch("ajax/alumnos?asignatura=" + encodeURIComponent(acronimo))
-                .then(resp => resp.json())
-                .then(alumnos => {
-                    if (!alumnos.length) {
-                        target.innerHTML = "<p>No hay alumnos inscritos.</p>";
-                        return;
-                    }
-
-                    target.innerHTML = "";
-                    alumnos.forEach(alumno => {
-                        const card = document.createElement("div");
-                        card.className = "alumno-card";
-
-                        // Foto (si existe)
-                        if (alumno.foto) {
-                            const img = document.createElement("img");
-                            img.className = "foto";
-                            img.src = alumno.foto;
-                            img.alt = "Foto de " + alumno.nombre;
-                            card.appendChild(img);
-                        }
-
-                        // Datos del alumno
-                        const nombre = `${alumno.nombre} ${alumno.apellidos}`;
-                        const dni = alumno.dni;
-                        const nota = alumno.nota ?? "";
-
-                        const info = document.createElement("p");
-                        info.innerHTML = `<strong>${nombre}</strong> (<em>${dni}</em>)`;
-                        card.appendChild(info);
-
-                        // Campo de nota
-                        const notaLabel = document.createElement("label");
-                        notaLabel.innerHTML = `Nota: <input type="number" id="nota-${dni}" value="${nota}" step="0.1" min="0" max="10">`;
-                        card.appendChild(notaLabel);
-
-                        // Botón de guardar
-                        const btn = document.createElement("button");
-                        btn.textContent = "Guardar";
-                        btn.onclick = () => guardarNota(dni, acronimo);
-                        card.appendChild(btn);
-
-                        target.appendChild(card);
-                    });
-                })
-                .catch(err => {
-                    console.error("❌ Error al cargar alumnos:", err);
-                    target.innerHTML = "<p>Error al cargar alumnos.</p>";
-                });
-        }
-
-        function guardarNota(dni, acronimo) {
-            const nota = document.getElementById("nota-" + dni).value;
-            fetch("ajax/modificarNota?dniAlumno=" + encodeURIComponent(dni) + "&asignatura=" + encodeURIComponent(acronimo), {
-                method: "PUT",
-                headers: { "Content-Type": "text/plain" },
-                body: nota
-            })
-            .then(resp => {
-                if (resp.ok) {
-                    alert("✅ Nota actualizada");
-                } else {
-                    alert("❌ Error al actualizar la nota");
-                }
-            })
-            .catch(err => {
-                console.error("❌ Error en PUT:", err);
-                alert("❌ Error al guardar nota");
-            });
-        }
-    </script>-->
 </body>
 </html>
