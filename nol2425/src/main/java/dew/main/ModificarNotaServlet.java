@@ -1,73 +1,88 @@
-
 package dew.main;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.*;
+
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.MediaType;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-
-import dew.main.structures.Nota;
-
-import com.google.gson.JsonElement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-
-@WebServlet("/profesor/ajax/modificarNota")
+@WebServlet("/profesor/modificarNota")
 public class ModificarNotaServlet extends HttpServlet {
-    private static final String API_URL = "http://localhost:9090/CentroEducativo";
+
+    private static final String API_BASE_URL = "http://localhost:9090/CentroEducativo";
 
     @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String dniAlumno = req.getParameter("dniAlumno");
-        String acronimo = req.getParameter("asignatura");
-        String nota = req.getReader().readLine(); // nota simple tipo "6.5"
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // Verificar rol
+        if (!req.isUserInRole("rolpro")) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "No autorizado");
+            return;
+        }
 
         HttpSession session = req.getSession(false);
-        if (session == null || !req.isUserInRole("rolpro")) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+        if (session == null || session.getAttribute("key") == null) {
+            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Sesión no válida");
             return;
         }
 
         String key = (String) session.getAttribute("key");
         String jsessionId = (String) session.getAttribute("jsessionId");
 
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(API_URL + "/asignaturas/" + acronimo + "/alumnos/" + dniAlumno + "?key=" + key))
-            .header("Content-Type", "application/json")
-            .header("Cookie", "JSESSIONID=" + jsessionId)
-            .PUT(HttpRequest.BodyPublishers.ofString(nota)) // solo texto plano, no JSON
-            .build();
+        // Leer cuerpo JSON
+        StringBuilder body = new StringBuilder();
+        try (BufferedReader reader = req.getReader()) {
+            String linea;
+            while ((linea = reader.readLine()) != null) {
+                body.append(linea);
+            }
+        }
 
-        HttpResponse<String> response;
-		try {
-			response = client.send(request, HttpResponse.BodyHandlers.ofString());
-			resp.setStatus(response.statusCode());
-	        resp.getWriter().write(response.body());
-		} catch (IOException | InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        try {
+            JsonObject json = JsonParser.parseString(body.toString()).getAsJsonObject();
+            String dni = json.get("dni").getAsString();
+            String asignatura = json.get("asignatura").getAsString();
+            String nota = json.get("nota").getAsString();
 
-        
+            // Construir JSON para enviar a backend
+            JsonObject notaJson = new JsonObject();
+            notaJson.addProperty("asignatura", asignatura);
+            notaJson.addProperty("nota", nota);
+
+            String apiUrl = API_BASE_URL + "/alumnos/" + dni + "/notas?key=" + key;
+            System.out.println(" PATCH a: " + apiUrl);
+            System.out.println(" Payload: " + notaJson.toString());
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(apiUrl))
+                    .header("Content-Type", "application/json")
+                    .method("PATCH", HttpRequest.BodyPublishers.ofString(notaJson.toString()));
+
+            if (jsessionId != null) {
+                requestBuilder.header("Cookie", "JSESSIONID=" + jsessionId);
+            }
+
+            HttpResponse<String> response = client.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+
+            System.out.println(" Estado respuesta backend: " + response.statusCode());
+            System.out.println(" Respuesta backend: " + response.body());
+
+            if (response.statusCode() == 200 || response.statusCode() == 204) {
+                resp.setStatus(HttpServletResponse.SC_OK);
+            } else {
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Error al modificar nota");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al procesar nota");
+        }
     }
 }

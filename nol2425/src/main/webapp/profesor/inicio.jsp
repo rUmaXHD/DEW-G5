@@ -8,16 +8,16 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Inicio Profesor</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Inicio Profesor – Notas Online</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 
-    <!-- Cabecera azul -->
-    <div class="bg-primary text-white py-5 mb-4">
+    <!-- Cabecera -->
+    <div class="bg-primary text-white py-5 mb-5">
         <div class="container text-center">
-            <h1 class="display-6">Asignaturas que impartes</h1>
-            <p class="mb-0">Selecciona una asignatura para ver y gestionar calificaciones</p>
+            <h1 class="display-5">Asignaturas que impartes</h1>
+            <p class="lead mb-0">Selecciona una asignatura para consultar o modificar calificaciones</p>
         </div>
     </div>
 
@@ -33,24 +33,27 @@
                             <p class="card-text mb-1"><strong>Curso:</strong> <%= a.getCurso() %>º</p>
                             <p class="card-text mb-1"><strong>Cuatrimestre:</strong> <%= a.getCuatrimestre() %></p>
                             <p class="card-text"><strong>Créditos:</strong> <%= a.getCreditos() %></p>
-                            <a href="<%= request.getContextPath() %>/profesor/listaAlumnos?asig=<%= a.getAcronimo() %>" 
-                               class="btn btn-outline-primary mt-3">Acceder</a>
+                            <a href="irAGestionar?asignatura=<%= a.getAcronimo() %>" class="btn btn-outline-primary mt-3">Acceder</a>
                         </div>
                     </div>
                 </div>
             <% } %>
         </div>
+
+        <!-- Botón de cerrar sesión -->
+        <div class="text-center mt-5">
+            <button class="btn btn-danger px-4" onclick="confirmarLogout()">Cerrar sesión</button>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center mt-5 pt-4 border-top">
+            <p class="text-muted small">Notas Online · Gestión de asignaturas · Curso 24/25</p>
+        </footer>
     </div>
 
-    <!-- Botón de cerrar sesión al final -->
-    <div class="container my-5 text-center">
-        <button class="btn btn-danger px-4" onclick="confirmarLogout()">Cerrar sesión</button>
-    </div>
-
-    <!-- Script de cierre de sesión -->
     <script>
         function confirmarLogout() {
-            alert("⚠️ En el siguiente recuadro pulsa CANCELAR para salir completamente del sistema. NO hagas caso a los cuadros de rellenar ");
+            alert("⚠️ En el siguiente recuadro pulsa CANCELAR para salir completamente del sistema. NO rellenes credenciales.");
             window.location.href = "<%= request.getContextPath() %>/LogoutServlet";
         }
     </script>

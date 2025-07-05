@@ -46,14 +46,6 @@ public class AsignaturasServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-		// Obtener JSESSIONID desde las cookies del navegador
-		/*
-		 * String jsessionId = null; jakarta.servlet.http.Cookie[] cookies =
-		 * req.getCookies(); if (cookies != null) { for (jakarta.servlet.http.Cookie
-		 * cookie : cookies) { if ("JSESSIONID".equals(cookie.getName())) { jsessionId =
-		 * cookie.getValue(); break; } } }
-		 */
-
 		HttpSession session = req.getSession(false);
 		if (session == null || session.getAttribute("key") == null) {
 			resp.sendRedirect(req.getContextPath() + "/LoginServlet");
