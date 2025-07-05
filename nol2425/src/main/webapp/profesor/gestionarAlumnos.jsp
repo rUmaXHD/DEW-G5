@@ -57,95 +57,116 @@
    		</div>
 
     <script>
-        const asignatura = "<%= (asignatura != null) ? asignatura.replace("\"", "\\\"") : "" %>";
-        const contextPath = "<%= request.getContextPath() %>";
-        let alumnos = [];
-        let indice = 0;
+	    const asignatura = "<%= (asignatura != null) ? asignatura.replace("\"", "\\\"") : "" %>";
+	    const contextPath = "<%= request.getContextPath() %>";
+	    let alumnos = [];
+	    let indice = 0;
+	
+	    console.log("🚀 Script cargado");
+	    console.log("📘 Asignatura:", asignatura);
+	    console.log("📘 ContextPath:", contextPath);
+	
+	    async function cargarAlumnos() {
+	        try {
+	            console.log("🔄 Ejecutando cargarAlumnos...");
+	            const url = contextPath + "/profesor/listaAlumnos?asignatura=" + asignatura + "&ajax=true";
+	            console.log("📘 URL construida:", url);
+	
+	            const res = await fetch(url);
+	            console.log("📥 Estado fetch:", res.status, res.statusText);
+	            if (!res.ok) throw new Error(`Estado ${res.status} ${res.statusText}`);
+	
+	            alumnos = await res.json();
+	            console.log("📦 JSON recibido:", alumnos);
+	
+	            if (!Array.isArray(alumnos) || alumnos.length === 0) {
+	                throw new Error("⚠️ La lista de alumnos está vacía o no es un array");
+	            }
+	
+	            console.log("✅ Alumnos cargados correctamente. Total:", alumnos.length);
+	            document.getElementById("mensajeCargando").classList.add("d-none");
+	            document.getElementById("contenedorAlumno").classList.remove("d-none");
+	            mostrarAlumno(indice);
+	
+	        } catch (err) {
+	            console.error("❌ Error al cargar alumnos:", err);
+	            document.getElementById("mensajeCargando").classList.add("d-none");
+	            document.getElementById("mensajeError").classList.remove("d-none");
+	        }
+	    }
+	
+	    function mostrarAlumno(i) {
+	        console.log("👤 Ejecutando mostrarAlumno con índice:", i);
+	        const alumno = alumnos[i];
+	        console.log("👤 Alumno seleccionado:", alumno);
+	
+	        if (!alumno || !alumno.alumno) {
+	            console.warn("⚠️ Datos incompletos del alumno");
+	            document.getElementById("dniAlumno").textContent = "DNI: ---";
+	            document.getElementById("notaInput").value = "";
+	            return;
+	        }
+	
+	        document.getElementById("dniAlumno").textContent = 'DNI: ' + alumno.alumno;
+	
+	        const notaValida = alumno.nota !== "" && !isNaN(alumno.nota) ? alumno.nota : "";
+	        console.log("📝 Nota a mostrar:", notaValida);
+	        document.getElementById("notaInput").value = notaValida;
+	
+	        document.getElementById("btnAnterior").disabled = i === 0;
+	        document.getElementById("btnSiguiente").disabled = i === alumnos.length - 1;
+	    }
+	
+	    document.getElementById("btnAnterior").addEventListener("click", () => {
+	        console.log("⬅️ Clic en anterior");
+	        if (indice > 0) {
+	            indice--;
+	            mostrarAlumno(indice);
+	        }
+	    });
+	
+	    document.getElementById("btnSiguiente").addEventListener("click", () => {
+	        console.log("➡️ Clic en siguiente");
+	        if (indice < alumnos.length - 1) {
+	            indice++;
+	            mostrarAlumno(indice);
+	        }
+	    });
+	
+	    document.getElementById("notaInput").addEventListener("change", async () => {
+	        const nuevaNota = document.getElementById("notaInput").value;
+	        const alumno = alumnos[indice];
+	        console.log("✏️ Nota modificada:", nuevaNota, "para alumno:", alumno.alumno);
+	
+	        try {
+	        	const urlModificarNota = contextPath + "/profesor/modificarNota"
+	            const res = await fetch(urlModificarNota, {
+	                method: "POST",
+	                headers: { "Content-Type": "application/json" },
+	                body: JSON.stringify({
+	                    dni: alumno.alumno,
+	                    asignatura: asignatura,
+	                    nota: nuevaNota === "" ? null : parseFloat(nuevaNota)
+	                })
+	            });
+	
+	            console.log("📤 Respuesta modificarNota:", res.status);
+	            if (!res.ok) throw new Error("Error al actualizar la nota");
+	
+	            console.log(`✅ Nota actualizada correctamente para ${alumno.alumno}: ${nuevaNota}`);
+	            alumno.nota = nuevaNota;
+	
+	        } catch (err) {
+	            console.error("❌ No se pudo guardar la nota:", err);
+	            alert("Error al guardar la nota");
+	        }
+	    });
+	
+	    window.onload = () => {
+	        console.log("📲 Ejecutando window.onload...");
+	        cargarAlumnos();
+	    };
+	</script>
 
-        async function cargarAlumnos() {
-            try {
-                const url = contextPath + "/profesor/listaAlumnos?asignatura=" + asignatura + "&ajax=true";
-                console.log("📘 URL construida:", url);
-
-                const res = await fetch(url);
-                if (!res.ok) throw new Error(`Estado ${res.status} ${res.statusText}`);
-
-                alumnos = await res.json();
-                console.log("📦 JSON recibido:", alumnos);
-
-                if (!Array.isArray(alumnos) || alumnos.length === 0) {
-                    throw new Error("La lista de alumnos está vacía o no es un array");
-                }
-
-                document.getElementById("mensajeCargando").classList.add("d-none");
-                document.getElementById("contenedorAlumno").classList.remove("d-none");
-                mostrarAlumno(indice);
-
-            } catch (err) {
-                console.error("❌ Error al cargar alumnos:", err);
-                document.getElementById("mensajeCargando").classList.add("d-none");
-                document.getElementById("mensajeError").classList.remove("d-none");
-            }
-        }
-
-        function mostrarAlumno(i) {
-            const alumno = alumnos[i];
-            console.log("👤 Mostrando alumno:", alumno);
-
-            if (!alumno || !alumno.alumno) {
-                document.getElementById("dniAlumno").textContent = "DNI: ---";
-                document.getElementById("notaInput").value = "";
-                return;
-            }
-
-            document.getElementById("dniAlumno").textContent =  'DNI: ' + alumno.alumno;
-            document.getElementById("notaInput").value = alumno.nota ?? "";
-
-            document.getElementById("btnAnterior").disabled = i === 0;
-            document.getElementById("btnSiguiente").disabled = i === alumnos.length - 1;
-        }
-
-        document.getElementById("btnAnterior").addEventListener("click", () => {
-            if (indice > 0) {
-                indice--;
-                mostrarAlumno(indice);
-            }
-        });
-
-        document.getElementById("btnSiguiente").addEventListener("click", () => {
-            if (indice < alumnos.length - 1) {
-                indice++;
-                mostrarAlumno(indice);
-            }
-        });
-
-        document.getElementById("notaInput").addEventListener("change", async () => {
-            const nuevaNota = document.getElementById("notaInput").value;
-            const alumno = alumnos[indice];
-
-            try {
-                const res = await fetch(`${contextPath}/profesor/modificarNota`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        dni: alumno.alumno,
-                        asignatura: asignatura,
-                        nota: nuevaNota
-                    })
-                });
-
-                if (!res.ok) throw new Error("Error al actualizar la nota");
-
-                console.log(`✅ Nota actualizada para ${alumno.alumno}: ${nuevaNota}`);
-                alumno.nota = nuevaNota;
-
-            } catch (err) {
-                console.error("❌ No se pudo guardar la nota:", err);
-                alert("Error al guardar la nota");
-            }
-        });
-
-        window.onload = cargarAlumnos;
-    </script>
 </body>
 </html>

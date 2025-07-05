@@ -1,4 +1,14 @@
 # DEW-G5
+##  Problema con los enlaces de autenticación en la página de inicio
+
+Ambos enlaces en la página principal (`inicio.jsp`) conducen al **mismo sistema de autenticación BASIC** configurado en Tomcat. Esto implica que:
+
+- Si un **alumno** hace clic en el link referente a _"Acceder como profesor"_ e introduce sus credenciales de alumno, podrá autenticarse correctamente y acceder a la ventana de profesor, aunque **no pertenezca a ese rol**.
+- De la misma forma, un **profesor** puede hacer click en el enlace del alumno e igualmente acceder a su interfaz.
+
+ **Esto demuestra que la distinción entre los enlaces de acceso por rol no es efectiva pero si existe la distinción de roles simplemente he decidido no dedicarle mas tiempo para abarcar mas tamaño de problema si hay tiempo se solucionará pero debido a que funciona se decide prescindir temporalmente.**
+
+---
 ## Flujo de Logout y Reautenticación – Sistema NOL2425
 
 Este sistema utiliza **autenticación HTTP BASIC**, gestionada por el navegador. A diferencia de un formulario tradicional, esto implica ciertas limitaciones técnicas, pero se ha aplicado un flujo controlado para facilitar el cierre de sesión y evitar reautenticaciones no deseadas.
