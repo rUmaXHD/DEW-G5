@@ -38,7 +38,7 @@
             const raw = document.getElementById("json-data").textContent;
             asignaturas = JSON.parse(raw);
         } catch (e) {
-            console.error("❌ Error al parsear el JSON:", e);
+            console.error(" Error al parsear el JSON:", e);
         }
 
         const contenedor = document.getElementById("asignaturas");

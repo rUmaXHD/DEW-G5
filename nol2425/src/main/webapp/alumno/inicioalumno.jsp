@@ -26,7 +26,12 @@
         <div id="contenedor-asignaturas" class="row gy-4"></div>
     </div>
 
-    <!-- Script  -->
+    <!-- Botón de cerrar sesión al final -->
+    <div class="container my-5 text-center">
+        <button class="btn btn-danger px-4" onclick="confirmarLogout()">Cerrar sesión</button>
+    </div>
+
+    <!-- Script: generación dinámica de tarjetas de asignaturas -->
     <script>
         const asignaturas = <%= asignaturasJson %>;
         const contenedor = document.getElementById("contenedor-asignaturas");
@@ -64,9 +69,12 @@
             col.appendChild(div);
             contenedor.appendChild(col);
         });
+
+        function confirmarLogout() {
+            alert(" En el siguiente recuadro pulsa CANCELAR para salir completamente del sistema. NO hagas caso a los cuadros de rellenar");
+            window.location.href = "<%= request.getContextPath() %>/LogoutServlet";
+        }
     </script>
 
 </body>
 </html>
-
-

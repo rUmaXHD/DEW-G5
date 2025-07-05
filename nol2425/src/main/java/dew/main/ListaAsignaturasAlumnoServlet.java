@@ -48,14 +48,6 @@ public class ListaAsignaturasAlumnoServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-		// Obtener JSESSIONID desde las cookies del navegador
-		/*
-		 * String jsessionId = null; jakarta.servlet.http.Cookie[] cookies =
-		 * req.getCookies(); if (cookies != null) { for (jakarta.servlet.http.Cookie
-		 * cookie : cookies) { if ("JSESSIONID".equals(cookie.getName())) { jsessionId =
-		 * cookie.getValue(); break; } } }
-		 */
-
 		HttpSession session = req.getSession(false);
 		if (session == null || session.getAttribute("key") == null) {
 			resp.sendRedirect(req.getContextPath() + "/LoginServlet");
@@ -109,7 +101,7 @@ public class ListaAsignaturasAlumnoServlet extends HttpServlet {
 
 		    ObjectMapper mapper = new ObjectMapper();
 
-		    System.out.println("✅ JSON bruto de asignaturasArray: " + asignaturasArray.toString());
+		    System.out.println(" JSON bruto de asignaturasArray: " + asignaturasArray.toString());
 
 		    for (JsonElement asigElement : asignaturasArray) {
 		        try {
@@ -118,11 +110,11 @@ public class ListaAsignaturasAlumnoServlet extends HttpServlet {
 		            String acronimo = elem.getAsignatura();
 
 		            if (acronimo == null) {
-		                System.out.println("⚠️ ACRÓNIMO NULO, se omite");
+		                System.out.println(" ACRÓNIMO NULO, se omite");
 		                continue;
 		            }
 
-		            System.out.println("✅ Cargando detalles para asignatura: " + acronimo);
+		            System.out.println(" Cargando detalles para asignatura: " + acronimo);
 
 		            // Detalle de la asignatura
 		            HttpRequest requestDetalleAsig = HttpRequest.newBuilder()
@@ -190,7 +182,7 @@ public class ListaAsignaturasAlumnoServlet extends HttpServlet {
 		                asignaturasInfo.add(asignaturaMap);
 		            }
 		        } catch (Exception exAsig) {
-		            System.out.println("❌ Error al procesar asignatura individual");
+		            System.out.println(" Error al procesar asignatura individual");
 		            exAsig.printStackTrace();
 		        }
 		    }

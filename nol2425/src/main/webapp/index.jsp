@@ -65,19 +65,33 @@
         </footer>
     </div>
 	
+	<% if ("true".equals(request.getParameter("logout"))) { %>
+    <div class="alert alert-info text-center mt-4">
+        Has cerrado sesión correctamente.
+    </div>
+	<% } %>
+	
 	<script>
-    	// Si vienes de un logout, forzar reautenticación fallida para olvidar credenciales BASIC
-	    if (document.referrer.includes("LogoutServlet")) {
+	    // Si venimos del logout, hacer una petición con credenciales inválidas para forzar olvido de BASIC
+	    if (window.location.search.includes("logout=true")) {
 	        fetch("LogoutServlet", {
 	            method: "GET",
 	            headers: {
-	                "Authorization": "Basic invalid==", // fuerza logout BASIC
+	                "Authorization": "Basic invalid=="
 	            }
 	        }).then(() => {
-	            console.log("Credenciales BASIC forzadas a invalidar.");
+	            console.log(" Credenciales BASIC forzadas a olvidarse.");
 	        });
+	
+	        // Limpiar la URL después del logout
+	        if (window.history.replaceState) {
+	            window.history.replaceState(null, null, window.location.pathname);
+	        }
 	    }
 	</script>
+
+
+
 	
 </body>
 </html>

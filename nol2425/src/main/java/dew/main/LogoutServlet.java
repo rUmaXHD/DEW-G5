@@ -10,20 +10,38 @@ import java.io.IOException;
 public class LogoutServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
 
-        HttpSession session = request.getSession(false); // no crear si no existe
+        //  Invalida la sesión del servidor
+        HttpSession session = request.getSession(false);
         if (session != null) {
-            session.invalidate(); //  Destruye la sesión
+            session.invalidate();
         }
 
-        // Opcional: limpiar cabeceras de autenticación BASIC (no se puede por código directamente)
-        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); 
-        response.setHeader("Pragma", "no-cache");
-        response.setDateHeader("Expires", 0);
+        //  Forzar al navegador a olvidar las credenciales BASIC
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
+        response.setHeader("WWW-Authenticate", "Basic realm=\"NotasOnline\"");
+        response.setContentType("text/html;charset=UTF-8");
 
-        // Redirigir al inicio o a una pantalla de login
-        response.sendRedirect(request.getContextPath() + "/index.jsp");
+        //  Mostrar mensaje y opción de volver al inicio
+        response.getWriter().write("""
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <title>Sesión cerrada</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+            </head>
+            <body class="bg-light d-flex flex-column justify-content-center align-items-center vh-100">
+                <div class="text-center">
+                    <h2 class="mb-4"> Has cerrado sesión</h2>
+                    <p class="mb-4">Las credenciales han sido olvidadas.</p>
+                    <a href="index.jsp" class="btn btn-primary">Volver al inicio</a>
+                </div>
+            </body>
+            </html>
+        """);
     }
 }
+
 

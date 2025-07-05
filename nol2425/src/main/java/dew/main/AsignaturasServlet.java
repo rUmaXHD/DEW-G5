@@ -107,7 +107,7 @@ public class AsignaturasServlet extends HttpServlet {
 
 		    ObjectMapper mapper = new ObjectMapper();
 
-		    System.out.println("✅ JSON bruto de asignaturasArray: " + asignaturasArray.toString());
+		    System.out.println(" JSON bruto de asignaturasArray: " + asignaturasArray.toString());
 
 		    for (JsonElement asigElement : asignaturasArray) {
 		        try {
@@ -116,11 +116,11 @@ public class AsignaturasServlet extends HttpServlet {
 		            String acronimo = elem.getAsignatura();
 
 		            if (acronimo == null) {
-		                System.out.println("⚠️ ACRÓNIMO NULO, se omite");
+		                System.out.println(" ACRÓNIMO NULO, se omite");
 		                continue;
 		            }
 
-		            System.out.println("✅ Cargando detalles para asignatura: " + acronimo);
+		            System.out.println(" Cargando detalles para asignatura: " + acronimo);
 
 		            // Detalle de la asignatura
 		            HttpRequest requestDetalleAsig = HttpRequest.newBuilder()
@@ -188,7 +188,7 @@ public class AsignaturasServlet extends HttpServlet {
 		                asignaturasInfo.add(asignaturaMap);
 		            }
 		        } catch (Exception exAsig) {
-		            System.out.println("❌ Error al procesar asignatura individual");
+		            System.out.println(" Error al procesar asignatura individual");
 		            exAsig.printStackTrace();
 		        }
 		    }

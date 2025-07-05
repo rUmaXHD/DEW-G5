@@ -21,6 +21,7 @@
         </div>
     </div>
 
+    <!-- Tarjetas de asignaturas -->
     <div class="container">
         <div class="row gy-4">
             <% for (Asignatura a : asignaturas) { %>
@@ -40,10 +41,20 @@
             <% } %>
         </div>
     </div>
-    <div class="container">
-		<a href="<%= request.getContextPath() %>/LogoutServlet" class="btn btn-danger">Cerrar sesión</a>
 
+    <!-- Botón de cerrar sesión al final -->
+    <div class="container my-5 text-center">
+        <button class="btn btn-danger px-4" onclick="confirmarLogout()">Cerrar sesión</button>
     </div>
+
+    <!-- Script de cierre de sesión -->
+    <script>
+        function confirmarLogout() {
+            alert("⚠️ En el siguiente recuadro pulsa CANCELAR para salir completamente del sistema. NO hagas caso a los cuadros de rellenar ");
+            window.location.href = "<%= request.getContextPath() %>/LogoutServlet";
+        }
+    </script>
 
 </body>
 </html>
+
