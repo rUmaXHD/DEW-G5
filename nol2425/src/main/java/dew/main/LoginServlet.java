@@ -13,10 +13,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+/**
+ * Servlet responsable del inicio de sesión.
+ * Recibe credenciales vía autenticación BASIC, valida contra la API externa,
+ * y redirige al usuario según su rol.
+ */
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
+
+	// URL de la API del backend educativo
 	private static final String API_URL = "http://localhost:9090/CentroEducativo/login";
 
 	@Override
@@ -31,9 +38,14 @@ public class LoginServlet extends HttpServlet {
 		procesarPostLogin(request, response);
 	}
 
+	/**
+	 * Procesa la autenticación, valida credenciales, obtiene clave de sesión
+	 * desde API, y redirige según rol.
+	 */
 	private void procesarPostLogin(HttpServletRequest request, HttpServletResponse response)
 			throws IOException, ServletException {
-		// Obtener JSESSIONID desde las cookies del navegador
+
+		// Extraer JSESSIONID (aunque no se usa activamente aquí)
 		String jsessionId = null;
 		jakarta.servlet.http.Cookie[] cookies = request.getCookies();
 		if (cookies != null) {
@@ -45,6 +57,7 @@ public class LoginServlet extends HttpServlet {
 			}
 		}
 
+		// Obtener credenciales BASIC
 		String[] creds = obtenerCredencialesDesdeAuthorization(request);
 		if (creds == null) {
 			mostrarAlertaError(response, "No se pudieron obtener las credenciales.");
@@ -62,19 +75,24 @@ public class LoginServlet extends HttpServlet {
 		HttpSession session = request.getSession();
 
 		try {
+			// Intenta obtener clave de sesión desde la API externa
 			boolean ok = obtenerSessionKeyDesdeAPI(dni, password, session);
 			if (!ok) {
+				System.out.println("[ERROR] Credenciales inválidas en la API CentroEducativo");
 				mostrarAlertaError(response, "Credenciales inválidas en CentroEducativo");
 				session.invalidate();
 				return;
 			}
 
-			// Redirige según el rol
+			// Redirige según el rol del usuario autenticado
 			if (request.isUserInRole("rolalu")) {
+				System.out.println("[INFO] Usuario identificado como alumno. Redirigiendo a AsignaturasServlet.");
 				response.sendRedirect(request.getContextPath() + "/AsignaturasServlet");
 			} else if (request.isUserInRole("rolpro")) {
+				System.out.println("[INFO] Usuario identificado como profesor. Redirigiendo a /profesor/inicio.");
 				response.sendRedirect(request.getContextPath() + "/profesor/inicio");
 			} else {
+				System.out.println("[WARN] Rol no reconocido. Finalizando sesión.");
 				mostrarAlertaError(response, "Rol no reconocido");
 				session.invalidate();
 			}
@@ -85,6 +103,9 @@ public class LoginServlet extends HttpServlet {
 		}
 	}
 
+	/**
+	 * Extrae y decodifica las credenciales BASIC del encabezado HTTP.
+	 */
 	private String[] obtenerCredencialesDesdeAuthorization(HttpServletRequest request) {
 		String authHeader = request.getHeader("Authorization");
 
@@ -92,53 +113,66 @@ public class LoginServlet extends HttpServlet {
 			String base64Credentials = authHeader.substring("Basic ".length());
 			byte[] credDecoded = java.util.Base64.getDecoder().decode(base64Credentials);
 			String credentials = new String(credDecoded);
-			return credentials.split(":", 2);
+			return credentials.split(":", 2); // [dni, password]
 		}
 		return null;
 	}
 
+	/**
+	 * Envía credenciales a la API CentroEducativo y guarda clave y JSESSIONID en sesión.
+	 */
 	private boolean obtenerSessionKeyDesdeAPI(String dni, String password, HttpSession session) throws Exception {
 		String json = String.format("{\"dni\":\"%s\", \"password\":\"%s\"}", dni, password);
 
 		HttpClient client = HttpClient.newHttpClient();
 
-		HttpRequest request = HttpRequest.newBuilder().uri(URI.create(API_URL))
-				.header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(json)).build();
+		HttpRequest request = HttpRequest.newBuilder()
+				.uri(URI.create(API_URL))
+				.header("Content-Type", "application/json")
+				.POST(HttpRequest.BodyPublishers.ofString(json))
+				.build();
 
 		HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-		System.out.println("Respuesta login API: " + response.body());
+
+		System.out.println("[INFO] Respuesta de login API: " + response.body());
 
 		if (response.statusCode() == 200) {
 			String key = response.body();
-			String setCookie = response.headers().firstValue("Set-Cookie").get();
-			
+			String setCookie = response.headers().firstValue("Set-Cookie").orElse("");
+
 			String jsessionid = null;
-			for(String cookie : setCookie.split(";")) {
+			for (String cookie : setCookie.split(";")) {
 				String[] parts = cookie.trim().split("=");
-				String cookieName = parts[0];
-				String cookieValue = parts[1];
-				
-				if("JSESSIONID".equals(cookieName)) {
-					jsessionid = cookieValue;
+				if (parts.length == 2 && "JSESSIONID".equals(parts[0])) {
+					jsessionid = parts[1];
 					break;
 				}
 			}
-			if(jsessionid == null)
+			if (jsessionid == null)
 				return false;
-					
+
+			// Guardar atributos en sesión
 			session.setAttribute("dni", dni);
 			session.setAttribute("password", password);
 			session.setAttribute("key", key);
 			session.setAttribute("jsessionId", jsessionid);
+
+			System.out.println("[INFO] Sesión creada con éxito para " + dni);
 			return true;
 		} else {
+			System.out.println("[ERROR] Código de estado recibido: " + response.statusCode());
 			return false;
 		}
 	}
 
+	/**
+	 * Muestra una alerta en el navegador con mensaje de error.
+	 */
 	private void mostrarAlertaError(HttpServletResponse response, String mensaje) throws IOException {
 		response.setContentType("text/html;charset=UTF-8");
-		response.getWriter().write("<html><head><script type='text/javascript'>" + "alert('"
-				+ mensaje.replace("'", "\\'") + "');" + "history.back();" + "</script></head><body></body></html>");
+		response.getWriter().write("<html><head><script type='text/javascript'>" +
+				"alert('" + mensaje.replace("'", "\\'") + "');" +
+				"history.back();" +
+				"</script></head><body></body></html>");
 	}
 }

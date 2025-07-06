@@ -2,6 +2,7 @@
 <%@ page import="dew.main.structures.Asignatura" %>
 <%@ page import="java.util.List" %>
 <%
+    // Lista de asignaturas que imparte el profesor, proporcionada por el servlet
     List<Asignatura> asignaturas = (List<Asignatura>) request.getAttribute("asignaturasData");	
 %>
 <!DOCTYPE html>
@@ -9,11 +10,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Inicio Profesor – Notas Online</title>
+    <!-- Bootstrap 5 para estilos -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 
-    <!-- Cabecera -->
+    <!-- Cabecera principal -->
     <div class="bg-primary text-white py-5 mb-5">
         <div class="container text-center">
             <h1 class="display-5">Asignaturas que impartes</h1>
@@ -21,7 +23,7 @@
         </div>
     </div>
 
-    <!-- Tarjetas de asignaturas -->
+    <!-- Tarjetas generadas dinámicamente con los datos de las asignaturas -->
     <div class="container">
         <div class="row gy-4">
             <% for (Asignatura a : asignaturas) { %>
@@ -40,20 +42,21 @@
             <% } %>
         </div>
 
-        <!-- Botón de cerrar sesión -->
+        <!-- Botón para cerrar sesión -->
         <div class="text-center mt-5">
             <button class="btn btn-danger px-4" onclick="confirmarLogout()">Cerrar sesión</button>
         </div>
 
-        <!-- Footer -->
+        <!-- Pie de página -->
         <footer class="text-center mt-5 pt-4 border-top">
             <p class="text-muted small">Notas Online · Gestión de asignaturas · Curso 24/25</p>
         </footer>
     </div>
 
+    <!-- Script para forzar cierre de sesión -->
     <script>
         function confirmarLogout() {
-            alert("⚠️ En el siguiente recuadro pulsa CANCELAR para salir completamente del sistema. NO rellenes credenciales.");
+            alert("En el siguiente recuadro pulsa CANCELAR para salir completamente del sistema. NO rellenes credenciales.");
             window.location.href = "<%= request.getContextPath() %>/LogoutServlet";
         }
     </script>

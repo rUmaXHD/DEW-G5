@@ -1,5 +1,5 @@
 
-# 🧭 Diagrama de navegación – Aplicación Notas Online
+# Diagrama de navegación – Aplicación Notas Online
 
 Este documento describe el flujo de navegación completo de la aplicación **Notas Online**, incluyendo el comportamiento para los roles **alumno** y **profesor**, y explicando el papel de cada servlet y vista JSP asociada.
 
@@ -25,7 +25,7 @@ A partir de aquí, el flujo se bifurca:
 
 ---
 
-# 🔷 Rutina del Alumno
+# Rutina del Alumno
 
 ## ➤ `inicioAlumno.jsp`
 
@@ -69,7 +69,7 @@ Desde esta página se pueden realizar tres acciones:
 
 ---
 
-# 🟣 Rutina del Profesor
+# Rutina del Profesor
 
 ## ➤ `inicio.jsp`
 
@@ -95,7 +95,7 @@ Desde aquí, el profesor tiene dos opciones:
 
 - Al cambiar la nota, se realiza una petición AJAX a `ModificarNotaServlet.java` que actualiza la calificación directamente en el backend.
 
-#### 🔄 Ventajas del uso de AJAX:
+#### Ventajas del uso de AJAX:
 
 - **Mejora de experiencia de usuario:** no se necesita recargar toda la página.
 - **Interacción inmediata:** los cambios son visibles de forma dinámica.
@@ -115,7 +115,7 @@ Desde aquí, el profesor tiene dos opciones:
 
 ---
 
-# 🛡 Rol del AccesoServlet
+# Rol del AccesoServlet
 
 `AccesoServlet.java` es clave para mantener la seguridad y coherencia de la navegación. Su función es:
 
