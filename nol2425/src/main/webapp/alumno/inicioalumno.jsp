@@ -25,6 +25,15 @@
         <h2 class="text-secondary mb-4">Tus asignaturas</h2>
         <div id="contenedor-asignaturas" class="row gy-4"></div>
     </div>
+    
+    <div class="text-center my-4">
+	    <a href="<%= request.getContextPath() %>/alumno/certificado" class="btn btn-success btn-lg">
+	         Generar certificado
+	    </a>
+	</div>
+
+    
+    
 
     <!-- Botón de cerrar sesión al final -->
     <div class="container my-5 text-center">

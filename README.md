@@ -9,13 +9,23 @@ Ambos enlaces en la página principal (`inicio.jsp`) conducen al **mismo sistema
  **Esto demuestra que la distinción entre los enlaces de acceso por rol no es efectiva pero si existe la distinción de roles simplemente he decidido no dedicarle mas tiempo para abarcar mas tamaño de problema si hay tiempo se solucionará pero debido a que funciona se decide prescindir temporalmente.**
 
 ---
+## Decisión sobre la funcionalidad de fotografías y datos extendidos del alumnado
+
+Durante el desarrollo del sistema **Notas Online**, se ha tomado la decisión de **no implementar por el momento la funcionalidad relacionada con la gestión y visualización de fotografías del alumnado**, así como otros datos extendidos como nombre, apellidos o expediente completo en la vista del profesorado.
+
+Esta decisión se debe principalmente a **limitaciones de tiempo**, ya que se ha priorizado la implementación de las funcionalidades críticas del proyecto, como la navegación AJAX, la edición de calificaciones y la integración con el backend de datos.
+
+No obstante, se deja constancia de que esta característica se **podrá incorporar más adelante** si el calendario del desarrollo lo permite. En tal caso, se contemplará la carga dinámica de imágenes por DNI, tal y como sugiere el enunciado, así como la visualización de información ampliada para cada alumno o alumna.
+
+---
+
 ## Flujo de Logout y Reautenticación – Sistema NOL2425
 
 Este sistema utiliza **autenticación HTTP BASIC**, gestionada por el navegador. A diferencia de un formulario tradicional, esto implica ciertas limitaciones técnicas, pero se ha aplicado un flujo controlado para facilitar el cierre de sesión y evitar reautenticaciones no deseadas.
 
 ---
 
-### ¿Cómo funciona el cierre de sesión?
+#### ¿Cómo funciona el cierre de sesión?
 
 1. El usuario pulsa el botón **“Cerrar sesión”** en cualquier página protegida.
 2. Antes de enviar la solicitud de logout, se ejecuta un `alert()` en el navegador con el siguiente mensaje: En el siguiente recuadro pulsa CANCELAR para salir completamente del sistema.
@@ -28,7 +38,7 @@ Este sistema utiliza **autenticación HTTP BASIC**, gestionada por el navegador.
 
 ---
 
-###  Cosas importantes a tener en cuenta
+#### Cosas importantes a tener en cuenta
 
 - **El cuadro de autenticación BASIC no se puede personalizar** ni interceptar directamente. Es una función nativa del navegador.
 - **Cancelar el login o pulsar ESC sin intención puede generar un error `401 Unauthorized` en pantalla**, ya que el recurso queda inaccesible.
@@ -38,11 +48,13 @@ Este sistema utiliza **autenticación HTTP BASIC**, gestionada por el navegador.
 
 ---
 
-###  Alternativa a futuro
+####  Alternativa a futuro
 
 Para tener control total sobre el flujo de autenticación (formularios, mensajes, estilos, errores), es recomendable en versiones futuras:
 - Migrar a **autenticación por formulario (FORM)** en lugar de BASIC.
 - Por falta de tiempo se decide prescindir de esta migración.
 
 ---
+
+
 
