@@ -46,7 +46,8 @@
 
         <div class="text-center no-print mt-4">
             <button class="btn btn-primary me-2" onclick="window.print()">🖨️ Imprimir certificado</button>
-            <a href="<%= request.getContextPath() %>/alumno/inicioAlumno.jsp" class="btn btn-outline-secondary">Volver</a>
+            <a href="<%= request.getContextPath() %>/AccesoServlet" class="btn btn-outline-secondary">Volver</a>
+
         </div>
 
         <footer class="text-center text-muted small mt-5 pt-4 border-top">
