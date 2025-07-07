@@ -14,4 +14,4 @@
 - Reviso la modificación de notas para asegurar que se actualicen sin errores.
 
 ## Observaciones
-- El sistema queda completo y listo para entrega.
+- El sistema queda listo para entrega.

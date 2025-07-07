@@ -9,6 +9,20 @@ Ambos enlaces en la página principal (`inicio.jsp`) conducen al **mismo sistema
  **Esto demuestra que la distinción entre los enlaces de acceso por rol no es efectiva pero si existe la distinción de roles simplemente he decidido no dedicarle mas tiempo para abarcar mas tamaño de problema si hay tiempo se solucionará pero debido a que funciona se decide prescindir temporalmente.**
 
 ---
+## Uso de librerías adicionales en el proyecto
+
+Durante el desarrollo del proyecto se ha hecho uso de la librería **GSON** para el tratamiento de datos en formato JSON.
+
+Sin embargo, **no todo el proyecto utiliza GSON de forma homogénea**. Debido a la falta de comunicación fluida con el resto del equipo se ha optado por resolver ciertas partes del código de forma manual, tratando cadenas JSON directamente o utilizando métodos alternativos.
+
+Este enfoque mixto no afecta al funcionamiento del sistema:  
+- Todas las funcionalidades están operativas y correctamente integradas.  
+- Las partes que usan GSON lo hacen con buenas prácticas.  
+- Las secciones que no lo utilizan han sido validadas para garantizar resultados correctos.
+
+En resumen, **se ha trabajado con los recursos disponibles y se ha intentado mantener la mayor coherencia posible**, dadas las circunstancias. El objetivo principal se ha cumplido: el sistema funciona correctamente, aunque algunas decisiones técnicas hayan tenido que adaptarse a la realidad del trabajo en equipo.
+
+---
 
 ##  Funcionalidad de grupos y miembros no implementada
 
